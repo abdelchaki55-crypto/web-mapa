@@ -102,8 +102,8 @@
       <div>
         <div class="flex flex-wrap items-center gap-2">
           <h1 class="font-black text-sm sm:text-base tracking-wide uppercase">Raptor News — ARK Official x1 Tribe Intelligence Map</h1>
-          <span id="live-status-pill" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
-            ⏳ Syncing Wildcard API...
+          <span id="live-status-pill" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            🟢 BattleMetrics Live
           </span>
           <span id="global-x1-players" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
             Active Players (...)
@@ -114,7 +114,7 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-1.5">
-      <button onclick="window.syncOfficialServers(true)" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">
+      <button onclick="window.syncBattleMetrics(true)" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">
         🟢 Refresh Live
       </button>
       <button id="btn-theme" onclick="window.toggleTheme()" class="ui-card px-3 py-1.5 rounded-lg text-xs font-bold hover:border-amber-400 transition">
@@ -203,7 +203,7 @@
       <!-- Column 2 (4 cols) -->
       <div class="lg:col-span-4 ui-card rounded-2xl p-4 flex flex-col">
         <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b" style="border-color: var(--border-ui);">
-          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official Servers (Live Pop)</span>
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official Servers (BattleMetrics Live)</span>
         </div>
 
         <div class="flex gap-1.5 mb-3 admin-only">
@@ -550,7 +550,7 @@
       }
     };
 
-    let officialServersMap = {};
+    let serverCache = JSON.parse(localStorage.getItem('rn_cache_bm_live') || '{}');
     let currentTribe = 'boom_evil';
     let lightMode = false;
     let isAdmin = localStorage.getItem('rn_is_admin') === 'true';
@@ -622,6 +622,7 @@
       localStorage.setItem('rn_servers_v3_' + id, JSON.stringify(clean));
       renderQuickTrackedList();
       if (currentTribe === id) window.selectTribe(id);
+      window.syncBattleMetrics(false);
     }
 
     window.addTribeServers = function() {
@@ -640,6 +641,7 @@
       setTribeServers(currentTribe, [...current, ...tokens]);
       input.value = '';
       notify(`✅ Added ${tokens.length} server(s) to ${TRIBE_DB[currentTribe].name}`);
+      window.syncBattleMetrics(false);
     };
 
     window.removeTribeServer = function(srvNum) {
@@ -647,6 +649,7 @@
       const current = getTribeServers(currentTribe).filter(s => s !== String(srvNum));
       setTribeServers(currentTribe, current);
       notify(`🗑️ Server #${srvNum} removed`);
+      window.syncBattleMetrics(false);
     };
 
     function parseServerToken(rawToken) {
@@ -654,17 +657,6 @@
       const isUncertain = str.includes('?') || str.includes('¿');
       const cleanNum = str.replace(/[?¿#]/g, '').trim();
       return { raw: str, cleanNum, isUncertain };
-    }
-
-    function findServerMatch(cleanNum) {
-      if (officialServersMap[cleanNum]) {
-        return officialServersMap[cleanNum];
-      }
-      return {
-        name: `Official PvP Server #${cleanNum}`,
-        NumPlayers: 0,
-        MaxPlayers: 70
-      };
     }
 
     function extractMapLabel(sessionName) {
@@ -680,63 +672,64 @@
       return 'Official 1x';
     }
 
-    window.syncOfficialServers = async function(manual = false) {
+    window.syncBattleMetrics = async function(manual = false) {
       const pill = document.getElementById('live-status-pill');
       if (pill) {
         pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30';
-        pill.textContent = '⏳ Syncing Wildcard API...';
+        pill.textContent = '⏳ Querying BattleMetrics Live...';
       }
 
-      const url = 'https://cdn2.arkdedicated.com/servers/asa/officialserverlist.json';
-      const proxies = [
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        `https://corsproxy.io/?${encodeURIComponent(url)}`
-      ];
+      const allTokens = new Set();
+      Object.keys(TRIBE_DB).forEach(id => {
+        getTribeServers(id).forEach(t => {
+          const { cleanNum } = parseServerToken(t);
+          if (cleanNum) allTokens.add(cleanNum);
+        });
+      });
 
-      let jsonArray = null;
-      for (const pUrl of proxies) {
+      let totalOnline = 0;
+      let fetchedCount = 0;
+
+      for (const num of allTokens) {
         try {
-          const res = await fetch(pUrl, { cache: 'no-store' });
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              jsonArray = data;
-              break;
-            }
+          const res = await fetch(`https://api.battlemetrics.com/servers?filter[game]=ark&filter[search]=${num}`);
+          const json = await res.json();
+          if (json && json.data && json.data.length > 0) {
+            const match = json.data.find(item => {
+              const name = item.attributes.name.toLowerCase();
+              return !name.includes('pve') && !name.includes('small') && !name.includes('conquest') && !name.includes('arkpocalypse');
+            }) || json.data[0];
+
+            serverCache[num] = {
+              name: match.attributes.name,
+              NumPlayers: match.attributes.players,
+              MaxPlayers: match.attributes.maxPlayers || 70,
+              status: match.attributes.status
+            };
+            totalOnline += Number(match.attributes.players || 0);
+            fetchedCount++;
           }
+          // Pequeña pausa para evitar sobrecargar la API
+          await new Promise(r => setTimeout(r, 120));
         } catch (e) {}
       }
 
-      if (jsonArray) {
-        officialServersMap = {};
-        jsonArray.forEach(s => {
-          const sName = String(s.Name || s.SessionName || s.name || '');
-          const matchNum = sName.match(/(\d+)$/);
-          if (matchNum) {
-            const sNum = matchNum[1];
-            officialServersMap[sNum] = {
-              name: sName,
-              NumPlayers: Number(s.NumPlayers ?? s.players ?? 0),
-              MaxPlayers: Number(s.MaxPlayers ?? s.maxPlayers ?? 70)
-            };
-          }
-        });
+      localStorage.setItem('rn_cache_bm_live', JSON.stringify(serverCache));
 
-        if (pill) {
-          pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
-          pill.textContent = '🟢 Live Official API';
-        }
-        if (manual) notify(`✅ Synced real-time population from Wildcard!`);
-      } else {
-        if (pill) {
-          pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/30';
-          pill.textContent = '⚠️ Proxy connection error';
-        }
-        if (manual) notify('⚠️ Could not connect to Wildcard API via proxies.');
+      if (pill) {
+        pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+        pill.textContent = '🟢 BattleMetrics Live';
       }
+
+      const playersEl = document.getElementById('global-x1-players');
+      if (playersEl) playersEl.textContent = `Active Players (${totalOnline})`;
+      
+      const countEl = document.getElementById('asa-total-count');
+      if (countEl) countEl.textContent = `${fetchedCount} tracked`;
 
       renderQuickTrackedList();
       window.selectTribe(currentTribe);
+      if (manual) notify('✅ Real-time population updated from BattleMetrics!');
     };
 
     function renderPills(containerId, list, colorClasses) {
@@ -788,16 +781,18 @@
 
         breakdownEl.innerHTML = servers.map(rawToken => {
           const { raw, cleanNum, isUncertain } = parseServerToken(rawToken);
-          const match = findServerMatch(cleanNum);
-          const p = match.NumPlayers;
-          const m = match.MaxPlayers;
+          const match = serverCache[cleanNum];
+          const p = match ? Number(match.NumPlayers ?? 0) : 0;
+          const m = match ? Number(match.MaxPlayers ?? 70) : 70;
           const pct = m > 0 ? Math.min(100, Math.round((p / m) * 100)) : 0;
           const isCapped = p >= 68;
-          const fullName = match.name;
+          const fullName = match ? match.name : `Official PvP Server #${cleanNum}`;
           const mapName = extractMapLabel(fullName);
-          totalPlayers += p;
-          totalMax += m;
-          liveFound++;
+          if (match) {
+            totalPlayers += p;
+            totalMax += m;
+            liveFound++;
+          }
 
           return `
             <div class="p-2.5 rounded-lg bg-slate-900/80 border ${isCapped ? 'border-red-500/60' : (isUncertain ? 'border-amber-500/60' : 'border-slate-700/80')} space-y-1.5">
@@ -812,7 +807,7 @@
                   <p class="text-[10px] text-slate-400 truncate mt-0.5" title="${fullName}">${fullName}</p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                  <span class="text-xs font-black ${isCapped ? 'text-red-400' : 'text-emerald-400'}">${isCapped ? '🔴' : '🟢'} ${p}/${m}</span>
+                  <span class="text-xs font-black ${isCapped ? 'text-red-400' : 'text-emerald-400'}">${isCapped ? '🔴' : '🟢'} ${match ? p : '--'}/${m}</span>
                   <button onclick="window.removeTribeServer('${raw}')" title="Remove server" class="text-slate-500 hover:text-red-400 text-xs font-bold px-1 admin-only">✕</button>
                 </div>
               </div>
@@ -856,15 +851,16 @@
         let anyCapped = false;
         servers.forEach(num => {
           const { cleanNum } = parseServerToken(num);
-          const match = findServerMatch(cleanNum);
-          const p = match.NumPlayers;
-          const m = match.MaxPlayers;
-          pSum += p;
-          mSum += m;
-          anyLive = true;
-          globalTotal += p;
-          totalTracked++;
-          if (p >= 68) anyCapped = true;
+          const match = serverCache[cleanNum];
+          if (match) {
+            const p = Number(match.NumPlayers ?? 0);
+            pSum += p;
+            mSum += Number(match.MaxPlayers ?? 70);
+            anyLive = true;
+            globalTotal += p;
+            totalTracked++;
+            if (p >= 68) anyCapped = true;
+          }
         });
 
         const isSelected = currentTribe === id;
@@ -951,3 +947,12 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
+      checkAdminStateOnLoad();
+      renderQuickTrackedList();
+      window.selectTribe('boom_evil');
+      window.syncBattleMetrics(false);
+      setInterval(() => window.syncBattleMetrics(false), 90000);
+    });
+  </script>
+</body>
+</html>
