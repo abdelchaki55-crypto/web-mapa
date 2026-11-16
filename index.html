@@ -134,12 +134,23 @@
       text-anchor: middle;
     }
 
+    /* Clases para alternar modo espectador / editor */
+    .admin-only {
+      display: none !important;
+    }
+    body.is-admin .admin-only {
+      display: flex !important;
+    }
+    body.is-admin .admin-only-block {
+      display: block !important;
+    }
+
     body.screenshot-mode .bottom-panel {
       display: none !important;
     }
   </style>
 </head>
-<body>
+<body class="">
 
   <!-- Top Control Bar -->
   <header class="topbar px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 z-20">
@@ -154,7 +165,7 @@
             ⏳ Connecting Wildcard API...
           </span>
         </div>
-        <p class="text-[11px]" style="color: var(--text-muted);">DISCORD.GG/RAPTORNEWS • Click any tribe on the map to view servers & live official x1 population below</p>
+        <p class="text-[11px]" style="color: var(--text-muted);">DISCORD.GG/RAPTORNEWS • Click any tribe to view spectator details & live population</p>
       </div>
     </div>
 
@@ -169,7 +180,7 @@
         🔄 Reset
       </button>
       <button onclick="syncOfficialASAServers(true)" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">
-        🟢 Sync Official x1
+        🟢 Sync Official ASA
       </button>
       <button id="btn-theme" onclick="toggleTheme()" class="ui-card px-3 py-1.5 rounded-lg text-xs font-bold hover:border-amber-400 transition">
         ☀️ Light Mode
@@ -179,6 +190,10 @@
       </button>
       <button onclick="exportMapPNG()" class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-sky-600 hover:bg-sky-500 text-white shadow-md transition">
         📸 Export PNG
+      </button>
+      <!-- Botón de acceso Admin / Espectador -->
+      <button id="btn-admin-mode" onclick="toggleAdminMode()" class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition">
+        🔒 Spectator Mode
       </button>
     </div>
   </header>
@@ -276,16 +291,14 @@
           </g>
         </g>
 
-        <!-- CLEAN NON-OVERLAPPING DIPLOMACY LINES -->
+        <!-- DIPLOMACY LINES -->
         <g id="lines-layer" stroke-linecap="round">
-          <!-- ENEMY -->
           <line class="diplo-line" data-type="enemy" data-from="BCS" data-to="FTA" x1="708" y1="118" x2="955" y2="118" stroke="#e51c24" stroke-width="13"/>
           <line class="diplo-line" data-type="enemy" data-from="ceo" data-to="boom_evil" x1="335" y1="315" x2="715" y2="315" stroke="#e51c24" stroke-width="4.2"/>
           <line class="diplo-line" data-type="enemy" data-from="ceo" data-to="tpg" x1="335" y1="315" x2="68" y2="365" stroke="#e51c24" stroke-width="4.2"/>
           <line class="diplo-line" data-type="enemy" data-from="ceo" data-to="100yes" x1="335" y1="315" x2="145" y2="605" stroke="#e51c24" stroke-width="4.2"/>
           <line class="diplo-line" data-type="enemy" data-from="ceo" data-to="oblock" x1="335" y1="315" x2="585" y2="495" stroke="#e51c24" stroke-width="4.2"/>
 
-          <!-- FRIENDLY -->
           <line class="diplo-line" data-type="friendly" data-from="bvs" data-to="lvsd" x1="175" y1="55" x2="285" y2="55" stroke="#1565c0" stroke-width="4"/>
           <line class="diplo-line" data-type="friendly" data-from="llc" data-to="ceo" x1="185" y1="215" x2="335" y2="315" stroke="#1565c0" stroke-width="4"/>
 
@@ -299,8 +312,7 @@
           <line class="diplo-line" data-type="friendly" data-from="ceo" data-to="bng" x1="331" y1="318" x2="245" y2="615" stroke="#1565c0" stroke-width="3.5"/>
 
           <line class="diplo-line" data-type="friendly" data-from="boom_evil" data-to="oz" x1="715" y1="315" x2="775" y2="205" stroke="#1565c0" stroke-width="4"/>
-          <line class="diplo-line" data-type="friendly" data-from="oz" data-to="most_wanted" x1="775" y1="205" x2="895" y2="245" stroke="#1565c0" stroke-width="4"/>
-
+          
           <g class="diplo-group" data-type="friendly" data-from="boom_evil" data-to="most_wanted">
             <line class="diplo-line" data-type="friendly" data-from="boom_evil" data-to="most_wanted" x1="715" y1="315" x2="895" y2="245" stroke="#1565c0" stroke-width="4.2"/>
             <rect x="774" y="270" width="64" height="18" rx="9" fill="#1565c0" stroke="#90caf9" stroke-width="1.3"/>
@@ -311,13 +323,11 @@
           <line class="diplo-line" data-type="friendly" data-from="boom_evil" data-to="woah_woah" x1="715" y1="315" x2="915" y2="415" stroke="#1565c0" stroke-width="4"/>
           <line class="diplo-line" data-type="friendly" data-from="oblock" data-to="wldd" x1="585" y1="495" x2="1035" y2="605" stroke="#1565c0" stroke-width="4"/>
 
-          <!-- ALLY -->
           <line class="diplo-line" data-type="ally" data-from="tpg" data-to="auto_decay" x1="68" y1="365" x2="230" y2="495" stroke="#29b6f6" stroke-width="4"/>
           <line class="diplo-line" data-type="ally" data-from="auto_decay" data-to="ceo" x1="230" y1="495" x2="335" y2="315" stroke="#29b6f6" stroke-width="4"/>
           <line class="diplo-line" data-type="ally" data-from="sk" data-to="nbt" x1="995" y1="395" x2="1015" y2="478" stroke="#29b6f6" stroke-width="4"/>
           <line class="diplo-line" data-type="ally" data-from="nbt" data-to="123_human" x1="1015" y1="478" x2="1140" y2="470" stroke="#29b6f6" stroke-width="4"/>
 
-          <!-- PORTAL -->
           <g class="diplo-group" data-type="ally" data-from="SABAGGE" data-to="SUR">
             <line class="diplo-line" data-type="ally" data-from="SABAGGE" data-to="SUR" x1="298" y1="676" x2="885" y2="676" stroke="#4caf50" stroke-width="6.5"/>
             <rect x="475" y="662" width="234" height="24" rx="12" fill="#2e7d32" stroke="#4caf50" stroke-width="1.8"/>
@@ -327,7 +337,6 @@
 
         <!-- TRIBE NODES -->
         <g id="nodes-layer">
-          <!-- BVS -->
           <g class="tribe-node" data-id="bvs" transform="translate(175, 55)" onclick="selectTribe('bvs')">
             <circle class="node-border" r="28" fill="#0c2438" stroke="#1565c0" stroke-width="2.5"/>
             <g clip-path="url(#clip-28)" class="logo-slot">
@@ -339,7 +348,6 @@
             <text class="svg-leader-text" id="lbl-leader-bvs" y="52"></text>
           </g>
 
-          <!-- LVSD -->
           <g class="tribe-node" data-id="lvsd" transform="translate(285, 55)" onclick="selectTribe('lvsd')">
             <circle class="node-border" r="28" fill="#042f2e" stroke="#1565c0" stroke-width="2.5"/>
             <g clip-path="url(#clip-28)" class="logo-slot">
@@ -351,7 +359,6 @@
             <text class="svg-leader-text" id="lbl-leader-lvsd" y="52"></text>
           </g>
 
-          <!-- BCS: SUICIDE SQUAD -->
           <g class="tribe-node" data-id="suicide_squad" transform="translate(435, 85)" onclick="selectTribe('suicide_squad')">
             <circle class="node-border" r="35" fill="#be185d" stroke="#f472b6" stroke-width="3"/>
             <g clip-path="url(#clip-35)" class="logo-slot">
@@ -365,7 +372,6 @@
             <text class="svg-leader-text" id="lbl-leader-suicide_squad" y="59"></text>
           </g>
 
-          <!-- BCS: WDC -->
           <g class="tribe-node" data-id="wdc" transform="translate(530, 85)" onclick="selectTribe('wdc')">
             <circle class="node-border" r="35" fill="#18181b" stroke="#78e024" stroke-width="3"/>
             <g clip-path="url(#clip-35)" class="logo-slot">
@@ -379,7 +385,6 @@
             <text class="svg-leader-text" id="lbl-leader-wdc" y="59"></text>
           </g>
 
-          <!-- BCS: SRU -->
           <g class="tribe-node" data-id="sru" transform="translate(625, 85)" onclick="selectTribe('sru')">
             <circle class="node-border" r="35" fill="#0369a1" stroke="#78e024" stroke-width="2.5"/>
             <g clip-path="url(#clip-35)" class="logo-slot">
@@ -390,7 +395,6 @@
             <text class="svg-leader-text" id="lbl-leader-sru" y="59"></text>
           </g>
 
-          <!-- BCS: Hydra -->
           <g class="tribe-node" data-id="hydra" transform="translate(625, 175)" onclick="selectTribe('hydra')">
             <circle class="node-border" r="35" fill="#450a0a" stroke="#e51c24" stroke-width="2.5"/>
             <g clip-path="url(#clip-35)" class="logo-slot">
@@ -401,7 +405,6 @@
             <text class="svg-leader-text" id="lbl-leader-hydra" y="58"></text>
           </g>
 
-          <!-- FTA: ADAT -->
           <g class="tribe-node" data-id="adat" transform="translate(1005, 55)" onclick="selectTribe('adat')">
             <circle class="node-border" r="29" fill="#581c87" stroke="#87cefa" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -412,7 +415,6 @@
             <text class="svg-leader-text" id="lbl-leader-adat" y="52"></text>
           </g>
 
-          <!-- FTA: ED -->
           <g class="tribe-node" data-id="ed" transform="translate(1085, 55)" onclick="selectTribe('ed')">
             <circle class="node-border" r="29" fill="#292524" stroke="#87cefa" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -424,7 +426,6 @@
             <text class="svg-leader-text" id="lbl-leader-ed" y="52"></text>
           </g>
 
-          <!-- FTA: CHILLIN -->
           <g class="tribe-node" data-id="chillin" transform="translate(1160, 55)" onclick="selectTribe('chillin')">
             <circle class="node-border" r="29" fill="#312e81" stroke="#87cefa" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -435,7 +436,6 @@
             <text class="svg-leader-text" id="lbl-leader-chillin" y="52"></text>
           </g>
 
-          <!-- FTA: DALG -->
           <g class="tribe-node" data-id="dalg" transform="translate(1005, 145)" onclick="selectTribe('dalg')">
             <circle class="node-border" r="29" fill="#0369a1" stroke="#87cefa" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -446,7 +446,6 @@
             <text class="svg-leader-text" id="lbl-leader-dalg" y="52"></text>
           </g>
 
-          <!-- FTA: BD -->
           <g class="tribe-node" data-id="bd" transform="translate(1085, 145)" onclick="selectTribe('bd')">
             <circle class="node-border" r="29" fill="#1e293b" stroke="#87cefa" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -457,7 +456,6 @@
             <text class="svg-leader-text" id="lbl-leader-bd" y="52"></text>
           </g>
 
-          <!-- FTA: IRR -->
           <g class="tribe-node" data-id="irr" transform="translate(1160, 145)" onclick="selectTribe('irr')">
             <circle class="node-border" r="29" fill="#7f1d1d" stroke="#87cefa" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -468,7 +466,6 @@
             <text class="svg-leader-text" id="lbl-leader-irr" y="52"></text>
           </g>
 
-          <!-- LLC -->
           <g class="tribe-node" data-id="llc" transform="translate(185, 215)" onclick="selectTribe('llc')">
             <circle class="node-border" r="35" fill="#09090b" stroke="#1565c0" stroke-width="2.5"/>
             <g clip-path="url(#clip-35)" class="logo-slot">
@@ -479,7 +476,6 @@
             <text class="svg-leader-text" id="lbl-leader-llc" y="59"></text>
           </g>
 
-          <!-- TPG -->
           <g class="tribe-node" data-id="tpg" transform="translate(68, 365)" onclick="selectTribe('tpg')">
             <circle class="node-border" r="29" fill="#1e293b" stroke="#e51c24" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -491,7 +487,6 @@
             <text class="svg-leader-text" id="lbl-leader-tpg" y="53"></text>
           </g>
 
-          <!-- AUTO DECAY (Relocated cleanly at 230, 495) -->
           <g class="tribe-node" data-id="auto_decay" transform="translate(230, 495)" onclick="selectTribe('auto_decay')">
             <circle class="node-border" r="29" fill="#090d16" stroke="#29b6f6" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -502,7 +497,6 @@
             <text class="svg-leader-text" id="lbl-leader-auto_decay" y="53"></text>
           </g>
 
-          <!-- CEO -->
           <g class="tribe-node" data-id="ceo" transform="translate(335, 315)" onclick="selectTribe('ceo')">
             <circle class="node-border" r="48" fill="#ffffff" stroke="#e51c24" stroke-width="4"/>
             <g clip-path="url(#clip-48)" class="logo-slot">
@@ -525,7 +519,6 @@
             <text class="svg-leader-text" id="lbl-leader-ceo" y="75"></text>
           </g>
 
-          <!-- BOOM EVIL -->
           <g class="tribe-node" data-id="boom_evil" transform="translate(715, 315)" onclick="selectTribe('boom_evil')">
             <circle class="node-border" r="48" fill="#dc2626" stroke="#facc15" stroke-width="3.5"/>
             <g clip-path="url(#clip-48)" class="logo-slot">
@@ -546,7 +539,6 @@
             <text class="svg-leader-text" id="lbl-leader-boom_evil" y="75"></text>
           </g>
 
-          <!-- OZ -->
           <g class="tribe-node" data-id="oz" transform="translate(775, 205)" onclick="selectTribe('oz')">
             <circle class="node-border" r="29" fill="#7f1d1d" stroke="#1565c0" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -557,7 +549,6 @@
             <text class="svg-leader-text" id="lbl-leader-oz" y="53"></text>
           </g>
 
-          <!-- MOST WANTED -->
           <g class="tribe-node" data-id="most_wanted" transform="translate(895, 245)" onclick="selectTribe('most_wanted')">
             <circle class="node-border" r="35" fill="#09090b" stroke="#1565c0" stroke-width="3"/>
             <g clip-path="url(#clip-35)" class="logo-slot">
@@ -569,7 +560,6 @@
             <text class="svg-leader-text" id="lbl-leader-most_wanted" y="59"></text>
           </g>
 
-          <!-- GOON PUFF -->
           <g class="tribe-node" data-id="goon_puff" transform="translate(945, 335)" onclick="selectTribe('goon_puff')">
             <circle class="node-border" r="29" fill="#713f12" stroke="#1565c0" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -580,7 +570,6 @@
             <text class="svg-leader-text" id="lbl-leader-goon_puff" y="53"></text>
           </g>
 
-          <!-- Woah Woah -->
           <g class="tribe-node" data-id="woah_woah" transform="translate(915, 415)" onclick="selectTribe('woah_woah')">
             <circle class="node-border" r="29" fill="#4c1d95" stroke="#1565c0" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -591,7 +580,6 @@
             <text class="svg-leader-text" id="lbl-leader-woah_woah" y="53"></text>
           </g>
 
-          <!-- SK -->
           <g class="tribe-node" data-id="sk" transform="translate(995, 395)" onclick="selectTribe('sk')">
             <circle class="node-border" r="21" fill="#ffffff" stroke="#29b6f6" stroke-width="2.5"/>
             <g clip-path="url(#clip-21)" class="logo-slot">
@@ -602,7 +590,6 @@
             <text class="svg-leader-text" id="lbl-leader-sk" y="44"></text>
           </g>
 
-          <!-- NBT -->
           <g class="tribe-node" data-id="nbt" transform="translate(1015, 478)" onclick="selectTribe('nbt')">
             <circle class="node-border" r="35" fill="#000000" stroke="#29b6f6" stroke-width="2.5"/>
             <g clip-path="url(#clip-35)" class="logo-slot">
@@ -613,7 +600,6 @@
             <text class="svg-leader-text" id="lbl-leader-nbt" y="58"></text>
           </g>
 
-          <!-- 123 Human -->
           <g class="tribe-node" data-id="123_human" transform="translate(1140, 470)" onclick="selectTribe('123_human')">
             <circle class="node-border" r="29" fill="#0f172a" stroke="#94a3b8" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -624,7 +610,6 @@
             <text class="svg-leader-text" id="lbl-leader-123_human" y="53"></text>
           </g>
 
-          <!-- DTC -->
           <g class="tribe-node" data-id="dtc" transform="translate(335, 475)" onclick="selectTribe('dtc')">
             <circle class="node-border" r="28" fill="#7f1d1d" stroke="#94a3b8" stroke-width="2.5"/>
             <g clip-path="url(#clip-28)" class="logo-slot">
@@ -635,7 +620,6 @@
             <text class="svg-leader-text" id="lbl-leader-dtc" y="52"></text>
           </g>
 
-          <!-- 8/8 -->
           <g class="tribe-node" data-id="8_8" transform="translate(470, 565)" onclick="selectTribe('8_8')">
             <circle class="node-border" r="29" fill="#082f49" stroke="#1565c0" stroke-width="2.5"/>
             <g clip-path="url(#clip-29)" class="logo-slot">
@@ -647,7 +631,6 @@
             <text class="svg-leader-text" id="lbl-leader-8_8" y="53"></text>
           </g>
 
-          <!-- OBLOCK -->
           <g class="tribe-node" data-id="oblock" transform="translate(585, 495)" onclick="selectTribe('oblock')">
             <circle class="node-border" r="30" fill="#09090b" stroke="#e51c24" stroke-width="3"/>
             <g clip-path="url(#clip-30)" class="logo-slot">
@@ -658,7 +641,6 @@
             <text class="svg-leader-text" id="lbl-leader-oblock" y="54"></text>
           </g>
 
-          <!-- N3 -->
           <g class="tribe-node" data-id="n3" transform="translate(52, 590)" onclick="selectTribe('n3')">
             <circle class="node-border" r="46" fill="#09090b" stroke="#a855f7" stroke-width="3"/>
             <g clip-path="url(#clip-46)" class="logo-slot">
@@ -670,7 +652,6 @@
             <text class="svg-leader-text" id="lbl-leader-n3" y="70"></text>
           </g>
 
-          <!-- 100% YES -->
           <g class="tribe-node" data-id="100yes" transform="translate(145, 605)" onclick="selectTribe('100yes')">
             <circle class="node-border" r="48" fill="#09090b" stroke="#e51c24" stroke-width="3.5"/>
             <g clip-path="url(#clip-48)" class="logo-slot">
@@ -683,7 +664,6 @@
             <text class="svg-leader-text" id="lbl-leader-100yes" y="72"></text>
           </g>
 
-          <!-- BNG -->
           <g class="tribe-node" data-id="bng" transform="translate(245, 615)" onclick="selectTribe('bng')">
             <circle class="node-border" r="36" fill="#18181b" stroke="#29b6f6" stroke-width="2.5"/>
             <g clip-path="url(#clip-36)" class="logo-slot">
@@ -694,7 +674,6 @@
             <text class="svg-leader-text" id="lbl-leader-bng" y="60"></text>
           </g>
 
-          <!-- ST6 -->
           <g class="tribe-node" data-id="st6" transform="translate(938, 615)" onclick="selectTribe('st6')">
             <circle class="node-border" r="36" fill="#1c1917" stroke="#c084fc" stroke-width="2.5"/>
             <g clip-path="url(#clip-36)" class="logo-slot">
@@ -706,7 +685,6 @@
             <text class="svg-leader-text" id="lbl-leader-st6" y="60"></text>
           </g>
 
-          <!-- WLDD -->
           <g class="tribe-node" data-id="wldd" transform="translate(1035, 605)" onclick="selectTribe('wldd')">
             <circle class="node-border" r="48" fill="#09090b" stroke="#facc15" stroke-width="3.5"/>
             <g clip-path="url(#clip-48)" class="logo-slot">
@@ -719,7 +697,6 @@
             <text class="svg-leader-text" id="lbl-leader-wldd" y="72"></text>
           </g>
 
-          <!-- O.A.O -->
           <g class="tribe-node" data-id="oao" transform="translate(1132, 615)" onclick="selectTribe('oao')">
             <circle class="node-border" r="36" fill="#1e3a8a" stroke="#c084fc" stroke-width="2.5"/>
             <g clip-path="url(#clip-36)" class="logo-slot">
@@ -773,7 +750,8 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2.5 border-t" style="border-color: var(--border-ui);">
+        <!-- Controles de edición protegidos (Solo visibles en modo Admin) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2.5 border-t admin-only" style="border-color: var(--border-ui);">
           <div>
             <label class="block text-[10px] font-bold mb-1" style="color: var(--text-muted);">👑 Edit Leader:</label>
             <div class="flex gap-1">
@@ -801,11 +779,12 @@
       <!-- Column 2 (4 cols) -->
       <div class="lg:col-span-4 ui-card rounded-2xl p-4 flex flex-col">
         <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b" style="border-color: var(--border-ui);">
-          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official x1 Servers (Live)</span>
-          <button onclick="openManualJsonModal()" class="text-[10px] font-bold text-sky-400 hover:underline">Paste manual JSON</button>
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official Servers (Live)</span>
+          <button onclick="openManualJsonModal()" class="text-[10px] font-bold text-sky-400 hover:underline admin-only">Paste manual JSON</button>
         </div>
 
-        <div class="flex gap-1.5 mb-3">
+        <!-- Solo visible en modo Admin -->
+        <div class="flex gap-1.5 mb-3 admin-only">
           <input type="text" id="input-add-servers" onkeydown="if(event.key==='Enter') addTribeServers()" placeholder="Add server # (e.g. 2378/2416)" class="ui-input flex-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold" />
           <button onclick="addTribeServers()" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white transition">
             + Add
@@ -1105,18 +1084,73 @@
         friendly: [],
         allies: []
       },
-      cute: { name: 'CUTE', offMap: true, bloc: 'Radar / Off-Map', crown: false, defaultServers: ['2162', '2570'], enemies: [], friendly: [], allies: [] },
-      tmnt: { name: 'TMNT', offMap: true, bloc: 'Radar / Off-Map', crown: false, defaultServers: ['2315', '2611'], enemies: [], friendly: [], allies: [] },
-      axk: { name: 'AXK', offMap: true, bloc: 'Radar / Off-Map', crown: false, defaultServers: ['2575', '2877'], enemies: [], friendly: [], allies: [] },
-      ibtb: { name: 'IBTB', offMap: true, bloc: 'Radar / Off-Map', crown: false, defaultServers: ['2018'], enemies: [], friendly: [], allies: [] },
-      human_club: { name: 'Human Club', offMap: true, bloc: 'Radar / Off-Map', crown: false, defaultServers: ['2413', '2163', '2588'], enemies: [], friendly: [], allies: [] },
-      fog: { name: 'FOG', offMap: true, bloc: 'Radar / Off-Map', crown: false, defaultServers: ['2408', '2353'], enemies: [], friendly: [], allies: [] }
+      cute: {
+        name: 'CUTE',
+        offMap: true,
+        bloc: 'Radar / Off-Map',
+        crown: false,
+        defaultServers: ['2162', '2570'],
+        enemies: [],
+        friendly: [],
+        allies: []
+      },
+      tmnt: {
+        name: 'TMNT',
+        offMap: true,
+        bloc: 'Radar / Off-Map',
+        crown: false,
+        defaultServers: ['2315', '2611'],
+        enemies: [],
+        friendly: [],
+        allies: []
+      },
+      axk: {
+        name: 'AXK',
+        offMap: true,
+        bloc: 'Radar / Off-Map',
+        crown: false,
+        defaultServers: ['2575', '2877'],
+        enemies: [],
+        friendly: [],
+        allies: []
+      },
+      ibtb: {
+        name: 'IBTB',
+        offMap: true,
+        bloc: 'Radar / Off-Map',
+        crown: false,
+        defaultServers: ['2018'],
+        enemies: [],
+        friendly: [],
+        allies: []
+      },
+      human_club: {
+        name: 'Human Club',
+        offMap: true,
+        bloc: 'Radar / Off-Map',
+        crown: false,
+        defaultServers: ['2413', '2163', '2588'],
+        enemies: [],
+        friendly: [],
+        allies: []
+      },
+      fog: {
+        name: 'FOG',
+        offMap: true,
+        bloc: 'Radar / Off-Map',
+        crown: false,
+        defaultServers: ['2408', '2353'],
+        enemies: [],
+        friendly: [],
+        allies: []
+      }
     };
 
     const ASA_OFFICIAL_URL = 'https://cdn2.arkdedicated.com/servers/asa/officialserverlist.json';
     let officialServers = [];
     let currentTribe = 'boom_evil';
     let lightMode = false;
+    let isAdmin = localStorage.getItem('rn_is_admin') === 'true';
 
     function notify(text) {
       const box = document.getElementById('toast-box');
@@ -1126,6 +1160,42 @@
       window._notifyTimer = setTimeout(() => {
         box.classList.add('translate-y-20', 'opacity-0');
       }, 2800);
+    }
+
+    // Sistema de autenticación de Administrador
+    function toggleAdminMode() {
+      if (isAdmin) {
+        isAdmin = false;
+        localStorage.setItem('rn_is_admin', 'false');
+        document.body.classList.remove('is-admin');
+        const btn = document.getElementById('btn-admin-mode');
+        btn.textContent = '🔒 Spectator Mode';
+        btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition';
+        notify('🔒 Switched to Spectator Mode');
+      } else {
+        const pass = prompt('Enter Admin Password:');
+        // CONTRASEÑA POR DEFECTO: puedes cambiar "raptoradmin" por la que quieras
+        if (pass === 'raptoradmin') {
+          isAdmin = true;
+          localStorage.setItem('rn_is_admin', 'true');
+          document.body.classList.add('is-admin');
+          const btn = document.getElementById('btn-admin-mode');
+          btn.textContent = '🔓 Editor Mode (Active)';
+          btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition';
+          notify('🔓 Admin Editor Mode Unlocked!');
+        } else if (pass !== null) {
+          notify('❌ Incorrect password');
+        }
+      }
+    }
+
+    function checkAdminStateOnLoad() {
+      if (isAdmin) {
+        document.body.classList.add('is-admin');
+        const btn = document.getElementById('btn-admin-mode');
+        btn.textContent = '🔓 Editor Mode (Active)';
+        btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition';
+      }
     }
 
     function getTribeServers(id) {
@@ -1147,6 +1217,7 @@
     }
 
     function addTribeServers() {
+      if (!isAdmin) return;
       const input = document.getElementById('input-add-servers');
       const raw = input.value.trim();
       if (!raw) return;
@@ -1163,6 +1234,7 @@
     }
 
     function removeTribeServer(srvNum) {
+      if (!isAdmin) return;
       const current = getTribeServers(currentTribe).filter(s => s !== String(srvNum));
       setTribeServers(currentTribe, current);
       notify(`🗑️ Server #${srvNum} removed`);
@@ -1186,7 +1258,6 @@
         if (!suffixRegex.test(sName)) return false;
 
         const lowerName = sName.toLowerCase();
-        // Strict filter: exclude small tribes, arkpocalypse, conquest, pve, hardcore, orp, etc., summing only official x1 PvP
         if (lowerName.includes('small') || lowerName.includes('pve') || lowerName.includes('arkpocalypse') || lowerName.includes('conquest') || lowerName.includes('hardcore') || lowerName.includes('orp')) {
           return false;
         }
@@ -1256,6 +1327,7 @@
     }
 
     function openManualJsonModal() {
+      if (!isAdmin) return;
       const m = document.getElementById('manual-json-modal');
       m.classList.remove('hidden');
       m.classList.add('flex');
@@ -1268,6 +1340,7 @@
     }
 
     function applyManualJson() {
+      if (!isAdmin) return;
       const raw = document.getElementById('manual-json-textarea').value.trim();
       try {
         const parsed = JSON.parse(raw);
@@ -1325,7 +1398,7 @@
       if (servers.length === 0) {
         summaryEl.textContent = '0 Servers assigned';
         summaryEl.className = 'text-xs font-bold text-slate-400 truncate mt-0.5';
-        breakdownEl.innerHTML = `<div class="text-xs p-3 rounded-lg bg-slate-900/50 text-slate-400">No servers assigned. Type a server number above (e.g. <strong class="text-white">5012</strong>) to track live population.</div>`;
+        breakdownEl.innerHTML = `<div class="text-xs p-3 rounded-lg bg-slate-900/50 text-slate-400">No servers assigned for this tribe.</div>`;
       } else {
         let totalPlayers = 0;
         let totalMax = 0;
@@ -1359,7 +1432,7 @@
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
                     <span class="text-xs font-black ${isCapped ? 'text-red-400' : 'text-emerald-400'}">${isCapped ? '🔴' : '🟢'} ${p}/${m}</span>
-                    <button onclick="removeTribeServer('${raw}')" title="Remove server" class="text-slate-500 hover:text-red-400 text-xs font-bold px-1">✕</button>
+                    <button onclick="removeTribeServer('${raw}')" title="Remove server" class="text-slate-500 hover:text-red-400 text-xs font-bold px-1 admin-only">✕</button>
                   </div>
                 </div>
                 <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -1379,7 +1452,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-[10px] font-bold text-slate-400">⚪ --/70</span>
-                  <button onclick="removeTribeServer('${raw}')" title="Remove server" class="text-slate-500 hover:text-red-400 text-xs font-bold px-1">✕</button>
+                  <button onclick="removeTribeServer('${raw}')" title="Remove server" class="text-slate-500 hover:text-red-400 text-xs font-bold px-1 admin-only">✕</button>
                 </div>
               </div>
             `;
@@ -1536,6 +1609,7 @@
     }
 
     function saveLeaderName() {
+      if (!isAdmin) return;
       const val = document.getElementById('input-leader').value.trim();
       if (val) {
         localStorage.setItem('rn_leader_' + currentTribe, val);
@@ -1553,6 +1627,7 @@
     }
 
     function uploadTribeLogo(event) {
+      if (!isAdmin) return;
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -1584,6 +1659,7 @@
     }
 
     function resetTribeLogo() {
+      if (!isAdmin) return;
       localStorage.removeItem('rn_logo_' + currentTribe);
       const node = document.querySelector(`.tribe-node[data-id="${currentTribe}"]`);
       if (node) {
@@ -1667,6 +1743,8 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      checkAdminStateOnLoad();
+
       Object.keys(TRIBE_DB).forEach(id => {
         const savedLogo = localStorage.getItem('rn_logo_' + id);
         if (savedLogo) applyLogoToNode(id, savedLogo);
