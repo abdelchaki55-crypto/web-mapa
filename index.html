@@ -102,14 +102,14 @@
       <div>
         <div class="flex flex-wrap items-center gap-2">
           <h1 class="font-black text-sm sm:text-base tracking-wide uppercase">Raptor News — ARK Official x1 Tribe Intelligence Map</h1>
-          <span id="live-status-pill" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-            🟢 Live Active
+          <span id="live-status-pill" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            ⏳ Syncing Wildcard API...
           </span>
           <span id="global-x1-players" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
             Active Players (...)
           </span>
         </div>
-        <p class="text-[11px]" style="color: var(--text-muted);">DISCORD.GG/RAPTORNEWS • Select any tribe below to view server status & population</p>
+        <p class="text-[11px]" style="color: var(--text-muted);">DISCORD.GG/RAPTORNEWS • Select any tribe below to view server status & real-time population</p>
       </div>
     </div>
 
@@ -203,7 +203,7 @@
       <!-- Column 2 (4 cols) -->
       <div class="lg:col-span-4 ui-card rounded-2xl p-4 flex flex-col">
         <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b" style="border-color: var(--border-ui);">
-          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official Servers (Live)</span>
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official Servers (Live Pop)</span>
         </div>
 
         <div class="flex gap-1.5 mb-3 admin-only">
@@ -550,7 +550,7 @@
       }
     };
 
-    let officialServersData = [];
+    let officialServersMap = {};
     let currentTribe = 'boom_evil';
     let lightMode = false;
     let isAdmin = localStorage.getItem('rn_is_admin') === 'true';
@@ -656,19 +656,15 @@
       return { raw: str, cleanNum, isUncertain };
     }
 
-    function findServerMatch(serverToken) {
-      const { cleanNum } = parseServerToken(serverToken);
-      if (!cleanNum || !officialServersData.length) return null;
-      const regex = new RegExp('(?:[^0-9]|^)' + cleanNum + '$');
-      const match = officialServersData.find(s => {
-        const name = String(s.Name || s.SessionName || s.name || '');
-        return regex.test(name) || name.includes(cleanNum);
-      });
-      return match ? {
-        name: match.Name || match.SessionName || match.name || `Server #${cleanNum}`,
-        NumPlayers: Number(match.NumPlayers ?? match.players ?? 0),
-        MaxPlayers: Number(match.MaxPlayers ?? match.maxPlayers ?? 70)
-      } : null;
+    function findServerMatch(cleanNum) {
+      if (officialServersMap[cleanNum]) {
+        return officialServersMap[cleanNum];
+      }
+      return {
+        name: `Official PvP Server #${cleanNum}`,
+        NumPlayers: 0,
+        MaxPlayers: 70
+      };
     }
 
     function extractMapLabel(sessionName) {
@@ -688,7 +684,7 @@
       const pill = document.getElementById('live-status-pill');
       if (pill) {
         pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30';
-        pill.textContent = '⏳ Loading Live...';
+        pill.textContent = '⏳ Syncing Wildcard API...';
       }
 
       const url = 'https://cdn2.arkdedicated.com/servers/asa/officialserverlist.json';
@@ -697,29 +693,50 @@
         `https://corsproxy.io/?${encodeURIComponent(url)}`
       ];
 
-      let dataLoaded = false;
+      let jsonArray = null;
       for (const pUrl of proxies) {
         try {
           const res = await fetch(pUrl, { cache: 'no-store' });
           if (res.ok) {
-            const json = await res.json();
-            if (Array.isArray(json) && json.length > 0) {
-              officialServersData = json;
-              dataLoaded = true;
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              jsonArray = data;
               break;
             }
           }
         } catch (e) {}
       }
 
-      if (pill) {
-        pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
-        pill.textContent = dataLoaded ? '🟢 Live Active' : '🟢 Ready (Offline Mode)';
+      if (jsonArray) {
+        officialServersMap = {};
+        jsonArray.forEach(s => {
+          const sName = String(s.Name || s.SessionName || s.name || '');
+          const matchNum = sName.match(/(\d+)$/);
+          if (matchNum) {
+            const sNum = matchNum[1];
+            officialServersMap[sNum] = {
+              name: sName,
+              NumPlayers: Number(s.NumPlayers ?? s.players ?? 0),
+              MaxPlayers: Number(s.MaxPlayers ?? s.maxPlayers ?? 70)
+            };
+          }
+        });
+
+        if (pill) {
+          pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+          pill.textContent = '🟢 Live Official API';
+        }
+        if (manual) notify(`✅ Synced real-time population from Wildcard!`);
+      } else {
+        if (pill) {
+          pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/30';
+          pill.textContent = '⚠️ Proxy connection error';
+        }
+        if (manual) notify('⚠️ Could not connect to Wildcard API via proxies.');
       }
 
       renderQuickTrackedList();
       window.selectTribe(currentTribe);
-      if (manual) notify(dataLoaded ? '✅ Servers updated live' : '⚠️ Using offline cache');
     };
 
     function renderPills(containerId, list, colorClasses) {
@@ -772,11 +789,11 @@
         breakdownEl.innerHTML = servers.map(rawToken => {
           const { raw, cleanNum, isUncertain } = parseServerToken(rawToken);
           const match = findServerMatch(cleanNum);
-          const p = match ? match.NumPlayers : 35;
-          const m = match ? match.MaxPlayers : 70;
-          const pct = Math.min(100, Math.round((p / m) * 100));
+          const p = match.NumPlayers;
+          const m = match.MaxPlayers;
+          const pct = m > 0 ? Math.min(100, Math.round((p / m) * 100)) : 0;
           const isCapped = p >= 68;
-          const fullName = match ? match.name : `Official PvP Server #${cleanNum}`;
+          const fullName = match.name;
           const mapName = extractMapLabel(fullName);
           totalPlayers += p;
           totalMax += m;
@@ -838,9 +855,10 @@
         let anyLive = false;
         let anyCapped = false;
         servers.forEach(num => {
-          const match = findServerMatch(num);
-          const p = match ? match.NumPlayers : 35;
-          const m = match ? match.MaxPlayers : 70;
+          const { cleanNum } = parseServerToken(num);
+          const match = findServerMatch(cleanNum);
+          const p = match.NumPlayers;
+          const m = match.MaxPlayers;
           pSum += p;
           mSum += m;
           anyLive = true;
@@ -933,11 +951,3 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-      checkAdminStateOnLoad();
-      renderQuickTrackedList();
-      window.selectTribe('boom_evil');
-      window.syncOfficialServers(false);
-    });
-  </script>
-</body>
-</html>
