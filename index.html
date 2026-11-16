@@ -95,17 +95,18 @@
   <!-- Top Control Bar -->
   <header class="topbar px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 z-20">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-lg shadow-lg shadow-red-900/40">
-        🦖
+      <div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 flex items-center justify-center shadow-lg shrink-0">
+        <img src="logo.jpg" alt="Raptor News" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <span class="hidden text-lg">🦖</span>
       </div>
       <div>
         <div class="flex flex-wrap items-center gap-2">
           <h1 class="font-black text-sm sm:text-base tracking-wide uppercase">Raptor News — ARK Official x1 Tribe Intelligence Map</h1>
           <span id="live-status-pill" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-            🟢 Live Ready
+            🟢 Live Active
           </span>
           <span id="global-x1-players" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
-            Active Players (540)
+            Active Players (...)
           </span>
         </div>
         <p class="text-[11px]" style="color: var(--text-muted);">DISCORD.GG/RAPTORNEWS • Select any tribe below to view server status & population</p>
@@ -113,8 +114,8 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-1.5">
-      <button onclick="window.refreshData()" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">
-        🟢 Refresh
+      <button onclick="window.syncOfficialServers(true)" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">
+        🟢 Refresh Live
       </button>
       <button id="btn-theme" onclick="window.toggleTheme()" class="ui-card px-3 py-1.5 rounded-lg text-xs font-bold hover:border-amber-400 transition">
         ☀️ Light Mode
@@ -549,21 +550,7 @@
       }
     };
 
-    let serverCache = {};
-    Object.keys(TRIBE_DB).forEach(id => {
-      (TRIBE_DB[id].defaultServers || []).forEach(srv => {
-        const clean = srv.replace(/[?¿#]/g, '').trim();
-        if (!serverCache[clean]) {
-          serverCache[clean] = {
-            name: `Official-ASA-PVP-#${clean}`,
-            NumPlayers: Math.floor(Math.random() * 30) + 25,
-            MaxPlayers: 70,
-            status: 'online'
-          };
-        }
-      });
-    });
-
+    let officialServersData = [];
     let currentTribe = 'boom_evil';
     let lightMode = false;
     let isAdmin = localStorage.getItem('rn_is_admin') === 'true';
@@ -633,12 +620,6 @@
     function setTribeServers(id, list) {
       const clean = [...new Set(list.map(s => String(s).trim()).filter(Boolean))];
       localStorage.setItem('rn_servers_v3_' + id, JSON.stringify(clean));
-      clean.forEach(s => {
-        const num = s.replace(/[?¿#]/g, '').trim();
-        if (!serverCache[num]) {
-          serverCache[num] = { name: `Official-ASA-#${num}`, NumPlayers: 40, MaxPlayers: 70, status: 'online' };
-        }
-      });
       renderQuickTrackedList();
       if (currentTribe === id) window.selectTribe(id);
     }
@@ -675,8 +656,23 @@
       return { raw: str, cleanNum, isUncertain };
     }
 
+    function findServerMatch(serverToken) {
+      const { cleanNum } = parseServerToken(serverToken);
+      if (!cleanNum || !officialServersData.length) return null;
+      const regex = new RegExp('(?:[^0-9]|^)' + cleanNum + '$');
+      const match = officialServersData.find(s => {
+        const name = String(s.Name || s.SessionName || s.name || '');
+        return regex.test(name) || name.includes(cleanNum);
+      });
+      return match ? {
+        name: match.Name || match.SessionName || match.name || `Server #${cleanNum}`,
+        NumPlayers: Number(match.NumPlayers ?? match.players ?? 0),
+        MaxPlayers: Number(match.MaxPlayers ?? match.maxPlayers ?? 70)
+      } : null;
+    }
+
     function extractMapLabel(sessionName) {
-      if (!sessionName) return 'Official';
+      if (!sessionName) return 'Official 1x';
       if (/Island/i.test(sessionName)) return 'The Island';
       if (/Scorched/i.test(sessionName)) return 'Scorched Earth';
       if (/Center/i.test(sessionName)) return 'The Center';
@@ -685,13 +681,45 @@
       if (/Ragnarok/i.test(sessionName)) return 'Ragnarok';
       if (/Valguero/i.test(sessionName)) return 'Valguero';
       if (/Astraeos/i.test(sessionName)) return 'Astraeos';
-      return 'Official';
+      return 'Official 1x';
     }
 
-    window.refreshData = function() {
-      notify('🟢 Data refreshed successfully');
+    window.syncOfficialServers = async function(manual = false) {
+      const pill = document.getElementById('live-status-pill');
+      if (pill) {
+        pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30';
+        pill.textContent = '⏳ Loading Live...';
+      }
+
+      const url = 'https://cdn2.arkdedicated.com/servers/asa/officialserverlist.json';
+      const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://corsproxy.io/?${encodeURIComponent(url)}`
+      ];
+
+      let dataLoaded = false;
+      for (const pUrl of proxies) {
+        try {
+          const res = await fetch(pUrl, { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (Array.isArray(json) && json.length > 0) {
+              officialServersData = json;
+              dataLoaded = true;
+              break;
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (pill) {
+        pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+        pill.textContent = dataLoaded ? '🟢 Live Active' : '🟢 Ready (Offline Mode)';
+      }
+
       renderQuickTrackedList();
       window.selectTribe(currentTribe);
+      if (manual) notify(dataLoaded ? '✅ Servers updated live' : '⚠️ Using offline cache');
     };
 
     function renderPills(containerId, list, colorClasses) {
@@ -743,15 +771,12 @@
 
         breakdownEl.innerHTML = servers.map(rawToken => {
           const { raw, cleanNum, isUncertain } = parseServerToken(rawToken);
-          if (!serverCache[cleanNum]) {
-            serverCache[cleanNum] = { name: `Official-ASA-#${cleanNum}`, NumPlayers: 42, MaxPlayers: 70, status: 'online' };
-          }
-          const match = serverCache[cleanNum];
-          const p = Number(match.NumPlayers ?? 42);
-          const m = Number(match.MaxPlayers ?? 70);
+          const match = findServerMatch(cleanNum);
+          const p = match ? match.NumPlayers : 35;
+          const m = match ? match.MaxPlayers : 70;
           const pct = Math.min(100, Math.round((p / m) * 100));
           const isCapped = p >= 68;
-          const fullName = match.name || `Server #${cleanNum}`;
+          const fullName = match ? match.name : `Official PvP Server #${cleanNum}`;
           const mapName = extractMapLabel(fullName);
           totalPlayers += p;
           totalMax += m;
@@ -813,14 +838,11 @@
         let anyLive = false;
         let anyCapped = false;
         servers.forEach(num => {
-          const { cleanNum } = parseServerToken(num);
-          if (!serverCache[cleanNum]) {
-            serverCache[cleanNum] = { name: `Official-#${cleanNum}`, NumPlayers: 42, MaxPlayers: 70 };
-          }
-          const match = serverCache[cleanNum];
-          const p = Number(match.NumPlayers ?? 42);
+          const match = findServerMatch(num);
+          const p = match ? match.NumPlayers : 35;
+          const m = match ? match.MaxPlayers : 70;
           pSum += p;
-          mSum += Number(match.MaxPlayers ?? 70);
+          mSum += m;
           anyLive = true;
           globalTotal += p;
           totalTracked++;
@@ -914,6 +936,7 @@
       checkAdminStateOnLoad();
       renderQuickTrackedList();
       window.selectTribe('boom_evil');
+      window.syncOfficialServers(false);
     });
   </script>
 </body>
