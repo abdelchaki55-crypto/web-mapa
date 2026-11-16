@@ -103,19 +103,19 @@
         <div class="flex flex-wrap items-center gap-2">
           <h1 class="font-black text-sm sm:text-base tracking-wide uppercase">Raptor News — ARK Official x1 Tribe Intelligence Map</h1>
           <span id="live-status-pill" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-            🟢 BattleMetrics Live
+            🟢 Live Active
           </span>
           <span id="global-x1-players" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
-            Active Players (...)
+            Active Players (0)
           </span>
         </div>
-        <p class="text-[11px]" style="color: var(--text-muted);">DISCORD.GG/RAPTORNEWS • Select any tribe below to view server status & real-time population</p>
+        <p class="text-[11px]" style="color: var(--text-muted);">DISCORD.GG/RAPTORNEWS • Select any tribe below to view server status & population</p>
       </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-1.5">
-      <button onclick="window.syncBattleMetrics(true)" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">
-        🟢 Refresh Live
+      <button onclick="window.refreshData()" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">
+        🟢 Refresh
       </button>
       <button id="btn-theme" onclick="window.toggleTheme()" class="ui-card px-3 py-1.5 rounded-lg text-xs font-bold hover:border-amber-400 transition">
         ☀️ Light Mode
@@ -203,7 +203,7 @@
       <!-- Column 2 (4 cols) -->
       <div class="lg:col-span-4 ui-card rounded-2xl p-4 flex flex-col">
         <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b" style="border-color: var(--border-ui);">
-          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official Servers (BattleMetrics Live)</span>
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official Servers (Editable Pop)</span>
         </div>
 
         <div class="flex gap-1.5 mb-3 admin-only">
@@ -550,7 +550,8 @@
       }
     };
 
-    let serverCache = JSON.parse(localStorage.getItem('rn_cache_bm_live') || '{}');
+    let serverPopCache = JSON.parse(localStorage.getItem('rn_server_pop_v3') || '{}');
+
     let currentTribe = 'boom_evil';
     let lightMode = false;
     let isAdmin = localStorage.getItem('rn_is_admin') === 'true';
@@ -579,7 +580,7 @@
         notify('🔒 Switched to Spectator Mode');
       } else {
         const pass = prompt('Enter Admin Password:');
-        if (pass === 'raptoradmin') {
+        if (pass === 'Raptor_Admin#2026!') {
           isAdmin = true;
           localStorage.setItem('rn_is_admin', 'true');
           document.body.classList.add('is-admin');
@@ -620,9 +621,15 @@
     function setTribeServers(id, list) {
       const clean = [...new Set(list.map(s => String(s).trim()).filter(Boolean))];
       localStorage.setItem('rn_servers_v3_' + id, JSON.stringify(clean));
+      clean.forEach(s => {
+        const num = s.replace(/[?¿#]/g, '').trim();
+        if (!serverPopCache[num]) {
+          serverPopCache[num] = { players: 35, max: 70 };
+        }
+      });
+      localStorage.setItem('rn_server_pop_v3', JSON.stringify(serverPopCache));
       renderQuickTrackedList();
       if (currentTribe === id) window.selectTribe(id);
-      window.syncBattleMetrics(false);
     }
 
     window.addTribeServers = function() {
@@ -641,7 +648,6 @@
       setTribeServers(currentTribe, [...current, ...tokens]);
       input.value = '';
       notify(`✅ Added ${tokens.length} server(s) to ${TRIBE_DB[currentTribe].name}`);
-      window.syncBattleMetrics(false);
     };
 
     window.removeTribeServer = function(srvNum) {
@@ -649,7 +655,17 @@
       const current = getTribeServers(currentTribe).filter(s => s !== String(srvNum));
       setTribeServers(currentTribe, current);
       notify(`🗑️ Server #${srvNum} removed`);
-      window.syncBattleMetrics(false);
+    };
+
+    window.updateServerPop = function(num, newPlayers) {
+      if (!isAdmin) return;
+      const p = Math.max(0, parseInt(newPlayers) || 0);
+      if (!serverPopCache[num]) serverPopCache[num] = { players: p, max: 70 };
+      else serverPopCache[num].players = p;
+      localStorage.setItem('rn_server_pop_v3', JSON.stringify(serverPopCache));
+      renderQuickTrackedList();
+      window.selectTribe(currentTribe);
+      notify(`🟢 Server #${num} set to ${p} players`);
     };
 
     function parseServerToken(rawToken) {
@@ -659,77 +675,14 @@
       return { raw: str, cleanNum, isUncertain };
     }
 
-    function extractMapLabel(sessionName) {
-      if (!sessionName) return 'Official 1x';
-      if (/Island/i.test(sessionName)) return 'The Island';
-      if (/Scorched/i.test(sessionName)) return 'Scorched Earth';
-      if (/Center/i.test(sessionName)) return 'The Center';
-      if (/Aberration/i.test(sessionName)) return 'Aberration';
-      if (/Extinction/i.test(sessionName)) return 'Extinction';
-      if (/Ragnarok/i.test(sessionName)) return 'Ragnarok';
-      if (/Valguero/i.test(sessionName)) return 'Valguero';
-      if (/Astraeos/i.test(sessionName)) return 'Astraeos';
+    function extractMapLabel(cleanNum) {
       return 'Official 1x';
     }
 
-    window.syncBattleMetrics = async function(manual = false) {
-      const pill = document.getElementById('live-status-pill');
-      if (pill) {
-        pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30';
-        pill.textContent = '⏳ Querying BattleMetrics Live...';
-      }
-
-      const allTokens = new Set();
-      Object.keys(TRIBE_DB).forEach(id => {
-        getTribeServers(id).forEach(t => {
-          const { cleanNum } = parseServerToken(t);
-          if (cleanNum) allTokens.add(cleanNum);
-        });
-      });
-
-      let totalOnline = 0;
-      let fetchedCount = 0;
-
-      for (const num of allTokens) {
-        try {
-          const res = await fetch(`https://api.battlemetrics.com/servers?filter[game]=ark&filter[search]=${num}`);
-          const json = await res.json();
-          if (json && json.data && json.data.length > 0) {
-            const match = json.data.find(item => {
-              const name = item.attributes.name.toLowerCase();
-              return !name.includes('pve') && !name.includes('small') && !name.includes('conquest') && !name.includes('arkpocalypse');
-            }) || json.data[0];
-
-            serverCache[num] = {
-              name: match.attributes.name,
-              NumPlayers: match.attributes.players,
-              MaxPlayers: match.attributes.maxPlayers || 70,
-              status: match.attributes.status
-            };
-            totalOnline += Number(match.attributes.players || 0);
-            fetchedCount++;
-          }
-          // Pequeña pausa para evitar sobrecargar la API
-          await new Promise(r => setTimeout(r, 120));
-        } catch (e) {}
-      }
-
-      localStorage.setItem('rn_cache_bm_live', JSON.stringify(serverCache));
-
-      if (pill) {
-        pill.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
-        pill.textContent = '🟢 BattleMetrics Live';
-      }
-
-      const playersEl = document.getElementById('global-x1-players');
-      if (playersEl) playersEl.textContent = `Active Players (${totalOnline})`;
-      
-      const countEl = document.getElementById('asa-total-count');
-      if (countEl) countEl.textContent = `${fetchedCount} tracked`;
-
+    window.refreshData = function() {
       renderQuickTrackedList();
       window.selectTribe(currentTribe);
-      if (manual) notify('✅ Real-time population updated from BattleMetrics!');
+      notify('🟢 Refreshed successfully');
     };
 
     function renderPills(containerId, list, colorClasses) {
@@ -781,18 +734,18 @@
 
         breakdownEl.innerHTML = servers.map(rawToken => {
           const { raw, cleanNum, isUncertain } = parseServerToken(rawToken);
-          const match = serverCache[cleanNum];
-          const p = match ? Number(match.NumPlayers ?? 0) : 0;
-          const m = match ? Number(match.MaxPlayers ?? 70) : 70;
-          const pct = m > 0 ? Math.min(100, Math.round((p / m) * 100)) : 0;
-          const isCapped = p >= 68;
-          const fullName = match ? match.name : `Official PvP Server #${cleanNum}`;
-          const mapName = extractMapLabel(fullName);
-          if (match) {
-            totalPlayers += p;
-            totalMax += m;
-            liveFound++;
+          if (!serverPopCache[cleanNum]) {
+            serverPopCache[cleanNum] = { players: 35, max: 70 };
           }
+          const sData = serverPopCache[cleanNum];
+          const p = Number(sData.players);
+          const m = Number(sData.max || 70);
+          const pct = Math.min(100, Math.round((p / m) * 100));
+          const isCapped = p >= 68;
+          const mapName = extractMapLabel(cleanNum);
+          totalPlayers += p;
+          totalMax += m;
+          liveFound++;
 
           return `
             <div class="p-2.5 rounded-lg bg-slate-900/80 border ${isCapped ? 'border-red-500/60' : (isUncertain ? 'border-amber-500/60' : 'border-slate-700/80')} space-y-1.5">
@@ -804,13 +757,21 @@
                     ${isUncertain ? '<span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/25 text-amber-300">UNCONFIRMED</span>' : ''}
                     ${isCapped ? '<span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-red-500/25 text-red-400">CAPPED</span>' : ''}
                   </div>
-                  <p class="text-[10px] text-slate-400 truncate mt-0.5" title="${fullName}">${fullName}</p>
+                  <p class="text-[10px] text-slate-400 truncate mt-0.5">Official PvP Server #${cleanNum}</p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                  <span class="text-xs font-black ${isCapped ? 'text-red-400' : 'text-emerald-400'}">${isCapped ? '🔴' : '🟢'} ${match ? p : '--'}/${m}</span>
+                  <span class="text-xs font-black ${isCapped ? 'text-red-400' : 'text-emerald-400'}">${isCapped ? '🔴' : '🟢'} ${p}/${m}</span>
                   <button onclick="window.removeTribeServer('${raw}')" title="Remove server" class="text-slate-500 hover:text-red-400 text-xs font-bold px-1 admin-only">✕</button>
                 </div>
               </div>
+
+              <!-- Input editable para cambiar jugadores de forma rápida y exacta -->
+              <div class="hidden admin-only flex items-center gap-2 pt-1 border-t border-slate-800">
+                <span class="text-[10px] font-bold text-slate-400">Edit Players:</span>
+                <input type="number" min="0" max="70" value="${p}" onchange="window.updateServerPop('${cleanNum}', this.value)" class="ui-input w-16 px-2 py-0.5 rounded text-xs font-bold text-center" />
+                <span class="text-[10px] text-slate-500">/ 70 max</span>
+              </div>
+
               <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                 <div class="h-full ${isCapped ? 'bg-red-500' : 'bg-emerald-500'} transition-all" style="width: ${pct}%"></div>
               </div>
@@ -851,16 +812,17 @@
         let anyCapped = false;
         servers.forEach(num => {
           const { cleanNum } = parseServerToken(num);
-          const match = serverCache[cleanNum];
-          if (match) {
-            const p = Number(match.NumPlayers ?? 0);
-            pSum += p;
-            mSum += Number(match.MaxPlayers ?? 70);
-            anyLive = true;
-            globalTotal += p;
-            totalTracked++;
-            if (p >= 68) anyCapped = true;
+          if (!serverPopCache[cleanNum]) {
+            serverPopCache[cleanNum] = { players: 35, max: 70 };
           }
+          const sData = serverPopCache[cleanNum];
+          const p = Number(sData.players);
+          pSum += p;
+          mSum += Number(sData.max || 70);
+          anyLive = true;
+          globalTotal += p;
+          totalTracked++;
+          if (p >= 68) anyCapped = true;
         });
 
         const isSelected = currentTribe === id;
@@ -950,8 +912,6 @@
       checkAdminStateOnLoad();
       renderQuickTrackedList();
       window.selectTribe('boom_evil');
-      window.syncBattleMetrics(false);
-      setInterval(() => window.syncBattleMetrics(false), 90000);
     });
   </script>
 </body>
