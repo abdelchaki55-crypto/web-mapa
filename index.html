@@ -233,7 +233,7 @@
         <div class="pt-2 border-t" style="border-color: var(--border-ui);">
           <div class="flex items-center justify-between pb-1.5 mb-2">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-purple-400">📡 Radar / Off-Map</span>
-            <span class="text-[10px] font-bold text-slate-400">6 tribes</span>
+            <span class="text-[10px] font-bold text-slate-400">Off-map tribes</span>
           </div>
           <div id="offmap-tracked-list" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
             <!-- Populated dynamically -->
@@ -256,19 +256,10 @@
         alias: 'BOOM EVIL',
         bloc: 'Central-East Axis',
         crown: true,
-        defaultServers: ['2378', '2416', '2455'],
-        enemies: ['CEO'],
+        defaultServers: ['2378', '2416', '2455', '2471', '2480', '2878', '2410'],
+        enemies: ['CEO', 'FOG', 'ECLIPSE'],
         friendly: ['OZ', 'MOST WANTED (PVP ONLY)', 'GOON PUFF', 'Woah Woah'],
         allies: []
-      },
-      nia: {
-        name: 'NIA',
-        bloc: 'Independent',
-        crown: false,
-        defaultServers: ['2443', '2381', '2905'],
-        enemies: ['FOG', 'ECLIPSE'],
-        friendly: ['IBTB', 'Kid Squad', 'SRU'],
-        allies: ['Emotional Damage', 'Goon Puff', 'BVS', 'SOUL']
       },
       wldd: {
         name: 'WLDD',
@@ -314,7 +305,7 @@
         logo: 'https://cdn.discordapp.com/attachments/1572015896283582555/1572016083567648879/07_100_PERCENT_YES.jpg?ex=6afcd590&is=6afb8410&hm=4d53ed37cda4b6b76a1dc6b208e3572e531a92e3893c1a0d90aa33cd0c866e6f&'
       },
       bng: {
-        name: 'BNG',
+        name: 'B&G',
         alias: 'B&G',
         bloc: 'Sabagge Cabagge 2',
         crown: false,
@@ -325,7 +316,7 @@
         logo: 'https://cdn.discordapp.com/attachments/1572015896283582555/1572016055126073474/10_BLACK_AND_GENTLE.jpg?ex=6afcd58a&is=6afb840a&hm=a22a5e014e4b48695d20d6f1e1173c1d5f914c6f97bfebe2e5c4c9da28fa6e0b&'
       },
       n3: {
-        name: 'N3',
+        name: 'NO NO NO',
         alias: 'NO NO NO',
         bloc: 'Sabagge Cabagge 2',
         crown: false,
@@ -340,14 +331,14 @@
         alias: 'CEO',
         bloc: 'Central Power',
         crown: true,
-        defaultServers: [],
+        defaultServers: ['2392', '2394', '2406', '2488', '2865'],
         enemies: ['Boom Evil', 'TPG', '100% YES', 'OBLOCK'],
         friendly: ['LLC', 'BCS (PVP ONLY)', '8/8', 'BNG'],
         allies: ['AUTO DECAY', 'BNG'],
         logo: 'https://cdn.discordapp.com/attachments/1572015896283582555/1572016056308990116/12_CEO.jpg?ex=6afcd58a&is=6afb840a&hm=3ce008667c6dc5024930106625fff7461fce2109a16570057ebaee88dc461ef8&'
       },
       suicide_squad: {
-        name: 'SUICIDE SQUAD',
+        name: 'Suicide Squad',
         alias: 'SUICIDE SQUAD',
         bloc: 'BCS Hexagon Coalition',
         crown: true,
@@ -378,10 +369,10 @@
         logo: 'https://cdn.discordapp.com/attachments/1572015896283582555/1572016102651863110/20_SRU.jpg?ex=6afcd595&is=6afb8415&hm=8bb393886d5fd9f61dda264acbbd1a1e276d6bbc7271c4c0608fd4c7b569f3ce&'
       },
       hydra: {
-        name: 'Hydra',
+        name: 'Hydra (BH)',
         bloc: 'BCS Hexagon Coalition',
         crown: false,
-        defaultServers: ['2594', '2485'],
+        defaultServers: ['2485', '2594'],
         enemies: ['FTA (Block)'],
         friendly: ['CEO (PVP ONLY)'],
         allies: ['SUICIDE SQUAD', 'WDC', 'SRU'],
@@ -391,13 +382,13 @@
         name: 'ADAT',
         bloc: 'FTA Coalition',
         crown: false,
-        defaultServers: ['2421'],
+        defaultServers: ['2421', '2451', '2884'],
         enemies: ['BCS (Block)'],
         friendly: [],
         allies: ['ED', 'CHILLIN', 'DALG', 'BD', 'IRR']
       },
-      ed: {
-        name: 'ED',
+      emotional_damage: {
+        name: 'Emotional Damage',
         alias: 'Emotional Damage',
         bloc: 'FTA Coalition',
         crown: false,
@@ -416,9 +407,33 @@
         allies: ['ADAT', 'ED', 'DALG', 'BD', 'IRR'],
         logo: 'https://cdn.discordapp.com/attachments/1572015896283582555/1572016051997380648/01_CHILLIN.jpg?ex=6afcd589&is=6afb8409&hm=4c548f13aab902bac077adc3a7f65d5d5445ade9679085de4cdce269277a0a58&'
       },
-      dalg: { name: 'DALG', bloc: 'FTA Coalition', crown: false, defaultServers: [], enemies: ['BCS (Block)'], friendly: [], allies: ['ADAT', 'ED', 'CHILLIN', 'BD', 'IRR'] },
-      bd: { name: 'BD', bloc: 'FTA Coalition', crown: false, defaultServers: [], enemies: ['BCS (Block)'], friendly: [], allies: ['ADAT', 'ED', 'CHILLIN', 'DALG', 'IRR'] },
-      irr: { name: 'IRR', bloc: 'FTA Coalition', crown: false, defaultServers: [], enemies: ['BCS (Block)'], friendly: [], allies: ['ADAT', 'ED', 'CHILLIN', 'DALG', 'BD'] },
+      dalg: {
+        name: 'DALG',
+        bloc: 'FTA Coalition',
+        crown: false,
+        defaultServers: ['2350', '2449'],
+        enemies: ['BCS (Block)'],
+        friendly: [],
+        allies: ['ADAT', 'ED', 'CHILLIN', 'BD', 'IRR']
+      },
+      bd: {
+        name: 'BD',
+        bloc: 'FTA Coalition',
+        crown: false,
+        defaultServers: ['2135', '2474', '2667'],
+        enemies: ['BCS (Block)'],
+        friendly: [],
+        allies: ['ADAT', 'ED', 'CHILLIN', 'DALG', 'IRR']
+      },
+      irr: {
+        name: 'IRR',
+        bloc: 'FTA Coalition',
+        crown: false,
+        defaultServers: ['2183', '2615'],
+        enemies: ['BCS (Block)'],
+        friendly: [],
+        allies: ['ADAT', 'ED', 'CHILLIN', 'DALG', 'BD']
+      },
       bvs: {
         name: 'BVS',
         bloc: 'Northwest',
@@ -442,7 +457,7 @@
         name: 'LLC',
         bloc: 'West',
         crown: false,
-        defaultServers: [],
+        defaultServers: ['2376', '2573'],
         enemies: [],
         friendly: ['CEO'],
         allies: [],
@@ -452,16 +467,16 @@
         name: 'TPG',
         bloc: 'West',
         crown: false,
-        defaultServers: ['2405', '2800', '2604'],
+        defaultServers: ['2405', '2604', '2800'],
         enemies: ['CEO'],
         friendly: [],
         allies: ['AUTO DECAY']
       },
       auto_decay: {
-        name: 'AUTO DECAY',
+        name: 'Auto Decay',
         bloc: 'West',
         crown: false,
-        defaultServers: ['2377', '2456', '2565'],
+        defaultServers: ['2377', '2456', '2460', '2565', '2581', '2872'],
         enemies: [],
         friendly: [],
         allies: ['TPG', 'CEO'],
@@ -477,9 +492,17 @@
         allies: [],
         logo: 'https://cdn.discordapp.com/attachments/1572015896283582555/1572016053700001902/04_DTC.jpg?ex=6afcd589&is=6afb8409&hm=69de869a8cc27138906ed7ebd7aa6134d84c9d3a18ee37f7cee47172632ce4a3&'
       },
-      '8_8': { name: '8/8', bloc: 'Center-South', crown: false, defaultServers: [], enemies: [], friendly: ['CEO'], allies: [] },
+      '8_8': {
+        name: '8/8',
+        bloc: 'Center-South',
+        crown: false,
+        defaultServers: ['2400', '2487', '2617', '2890'],
+        enemies: [],
+        friendly: ['CEO'],
+        allies: []
+      },
       oblock: {
-        name: 'OBLOCK',
+        name: 'O’Block',
         alias: "O'Block",
         bloc: 'Center-South',
         crown: false,
@@ -500,20 +523,20 @@
         logo: 'https://cdn.discordapp.com/attachments/1572015896283582555/1572016084343853217/09_OKTOBERFEST.jpg?ex=6afcd591&is=6afb8411&hm=2776e76c5d43f31fe184d9ac7406ce11ec4cb1c0a9a8fbeefadb0acf22017946&'
       },
       most_wanted: {
-        name: 'MOST WANTED',
+        name: 'Most Wanted',
         bloc: 'North-East',
         crown: false,
-        defaultServers: ['2407', '2577', '2397', '2535?'],
+        defaultServers: ['2397', '2407', '2535', '2577'],
         enemies: [],
         friendly: ['Boom Evil (PVP ONLY)', 'OZ'],
         allies: [],
         logo: 'https://cdn.discordapp.com/attachments/1572015896283582555/1572016094187757678/17_WANTED_XXX.jpg?ex=6afcd593&is=6afb8413&hm=dcb713e77adf419b3762dde0df7403562cb46066be5ce4c832ffb08e454e5358&'
       },
       goon_puff: {
-        name: 'GOON PUFF',
+        name: 'Goon Puff',
         bloc: 'East',
         crown: false,
-        defaultServers: ['2593', '2382'],
+        defaultServers: ['2382', '2593'],
         enemies: [],
         friendly: ['Boom Evil'],
         allies: []
@@ -522,17 +545,25 @@
         name: 'Woah Woah',
         bloc: 'East',
         crown: false,
-        defaultServers: ['2011', '2385', '2540', '2386'],
+        defaultServers: ['2011', '2385', '2386', '2540'],
         enemies: [],
         friendly: ['Boom Evil'],
         allies: []
       },
-      sk: { name: 'SK', bloc: 'Southeast', crown: false, defaultServers: [], enemies: [], friendly: [], allies: ['NBT'] },
+      sk: {
+        name: 'SK',
+        bloc: 'Southeast',
+        crown: false,
+        defaultServers: ['2125', '2435'],
+        enemies: [],
+        friendly: [],
+        allies: ['NBT']
+      },
       nbt: {
         name: 'NBT',
         bloc: 'Southeast',
         crown: false,
-        defaultServers: [],
+        defaultServers: ['2399', '2591'],
         enemies: [],
         friendly: [],
         allies: ['SK', '123 Human'],
@@ -557,8 +588,26 @@
         friendly: [],
         allies: []
       },
+      nia: {
+        name: 'NIA',
+        bloc: 'Independent',
+        crown: false,
+        defaultServers: ['2381', '2443', '2905'],
+        enemies: ['FOG', 'ECLIPSE'],
+        friendly: ['IBTB', 'Kid Squad', 'SRU'],
+        allies: ['Emotional Damage', 'Goon Puff', 'BVS', 'SOUL']
+      },
+      tamed_and_confused: {
+        name: 'Tamed and Confused',
+        bloc: 'Independent',
+        crown: false,
+        defaultServers: ['2866'],
+        enemies: [],
+        friendly: [],
+        allies: []
+      },
       cute: {
-        name: 'CUTE',
+        name: 'Cute',
         offMap: true,
         bloc: 'Radar / Off-Map',
         crown: false,
@@ -578,11 +627,11 @@
         allies: []
       },
       axk: {
-        name: 'AXK',
+        name: 'AxK',
         offMap: true,
         bloc: 'Radar / Off-Map',
         crown: false,
-        defaultServers: ['2575', '2877'],
+        defaultServers: ['2396', '2575', '2877'],
         enemies: [],
         friendly: [],
         allies: []
@@ -602,7 +651,7 @@
         offMap: true,
         bloc: 'Radar / Off-Map',
         crown: false,
-        defaultServers: ['2413', '2163', '2588'],
+        defaultServers: ['2163', '2413', '2588'],
         enemies: [],
         friendly: [],
         allies: []
@@ -612,8 +661,8 @@
         offMap: true,
         bloc: 'Radar / Off-Map',
         crown: false,
-        defaultServers: ['2408', '2353'],
-        enemies: [],
+        defaultServers: ['2078', '2353', '2408'],
+        enemies: ['NIA', 'Boom Evil'],
         friendly: [],
         allies: []
       }
