@@ -89,6 +89,7 @@
       display: none !important;
     }
   </style>
+  <link rel="stylesheet" href="interactive-map.css" />
 </head>
 <body class="">
 
@@ -132,7 +133,26 @@
   <!-- Static PNG Map Container -->
   <main class="w-full p-2 sm:p-4" style="background-color: var(--canvas-bg);">
     <div class="map-wrapper rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
-      <img id="static-map-img" src="mapa.jpg" alt="Raptor News ARK Map" class="w-full h-auto block object-contain" />
+      <div class="map-toolbar" aria-label="Map controls">
+        <label class="map-search-label" for="map-search">Find a tribe
+          <input id="map-search" class="ui-input" type="search" placeholder="Search tribes…" autocomplete="off" />
+        </label>
+        <div class="map-zoom-controls">
+          <button id="map-zoom-out" type="button" aria-label="Zoom out">−</button>
+          <output id="map-zoom-level" aria-live="polite">100%</output>
+          <button id="map-zoom-in" type="button" aria-label="Zoom in">+</button>
+          <button id="map-fit" type="button">Fit map</button>
+        </div>
+      </div>
+      <p class="map-help">Select a logo to see tribe details. Use + to zoom and scroll to explore the map.</p>
+      <div id="map-search-results" aria-label="Tribe search results" hidden></div>
+      <div id="map-viewport" tabindex="0" aria-label="Interactive tribe map. Tab to a tribe and press Enter to select.">
+        <div id="map-stage">
+          <img id="static-map-img" src="mapa.jpg" alt="ARK tribe alliances and rivalries. Select a tribe logo for details." class="w-full h-auto block object-contain" width="1920" height="1080" />
+          <div id="map-hotspots" role="group" aria-label="Tribes on the map"></div>
+        </div>
+      </div>
+      <p id="map-selection" role="status" aria-live="polite"></p>
     </div>
   </main>
 
@@ -1071,5 +1091,6 @@
       setInterval(() => window.syncOfficialServers(false), 60000);
     });
   </script>
+  <script src="interactive-map.js"></script>
 </body>
 </html>
