@@ -1,0 +1,14 @@
+{
+  "source": "https://api.usebeacon.app/v4/deltas?version=7",
+  "sourceArchiveSHA256": "e8a41b467afa1db96fb2e8629b3795433f6373ac50811ebf2b7a4cb870219d9e",
+  "officialContentPack": "b32a3d73-9406-56f2-bd8f-936ee0275249",
+  "retrieved": "2026-11-17",
+  "registeredRecipes": 1322,
+  "excludedTags": [
+    "deprecated",
+    "cheat"
+  ],
+  "includedRecipes": 1276,
+  "quantity": "Ingredients per recipe execution; output batch size is not supplied by this dataset.",
+  "rawMode": "Only the previously verified basic material recipes are recursively expanded. All other ingredients remain finished components."
+}

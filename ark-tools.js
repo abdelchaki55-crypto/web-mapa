@@ -4,7 +4,7 @@
   const recipeById=new Map(data.recipes.map(r=>[r.id,r]));
   const tiers=new Map(data.kibble.map(k=>[k.id,k]));
   const KEY='rn_tools_v1';
-  let queue=[{id:'auto',quantity:100}], stock=Object.create(null), selectedKibble='extraordinary', mode='direct', polymer='crafted';
+  let queue=[{id:'auto',quantity:100}], selectedKibble='extraordinary', mode='direct', polymer='crafted';
   function count(value,minimum=1,maximum=100000){
     const n=Number(value);
     return String(value).trim()!=='' && Number.isSafeInteger(n) && n>=minimum && n<=maximum ? n : null;
@@ -12,12 +12,11 @@
   try {
     const saved=JSON.parse(localStorage.getItem(KEY));
     if(saved && Array.isArray(saved.queue)) {
-      queue=saved.queue.filter(row=>recipeById.has(row.id) && count(row.quantity)!==null).slice(0,20);
-      if(saved.stock && typeof saved.stock==='object')for(const [key,value] of Object.entries(saved.stock))if(count(value,0,1e9)!==null)stock[key]=Number(value);
+      queue=saved.queue.filter(row=>recipeById.has(row.id) && count(row.quantity)!==null).slice(0,data.recipes.length);
       mode=saved.mode==='raw'?'raw':'direct';polymer=saved.polymer==='organic'?'organic':'crafted';
     }
   } catch {}
-  function save(){try{localStorage.setItem(KEY,JSON.stringify({queue,stock,mode,polymer}));}catch{}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify({queue,mode,polymer}));}catch{}}
   function message(text){$('tools-message').textContent=text;}
   function element(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;}
   function calculate(rows,raw=false,organic=false){
@@ -39,19 +38,11 @@
     $('materials').replaceChildren();$('recipe-sources').replaceChildren();
     for(const [name,total] of Object.entries(totals).sort(([a],[b])=>a.localeCompare(b))){
       const row=element('tr');row.dataset.material=name;
-      const label=element('td',name),amount=element('td',number.format(total)),have=element('td'),missing=element('td');
-      const remaining=element('strong',number.format(Math.max(0,total-(stock[name]||0))));missing.append(remaining);
-      const input=element('input');input.type='number';input.min='0';input.max='1000000000';input.step='1';input.value=stock[name]||0;input.setAttribute('aria-label',`${name} already in stock`);
-      input.addEventListener('input',()=>{
-        const value=count(input.value,0,1e9);
-        input.setCustomValidity(value===null?'Enter a whole number from 0 to 1,000,000,000.':'');
-        if(value===null){remaining.textContent='—';return;}
-        stock[name]=value;remaining.textContent=number.format(Math.max(0,total-value));save();
-      });have.append(input);row.append(label,amount,have,missing);$('materials').append(row);
+      const label=element('td',name),amount=element('td');amount.append(element('strong',number.format(total)));row.append(label,amount);$('materials').append(row);
     }
     const items=queue.reduce((sum,r)=>sum+r.quantity,0);
-    $('queue-summary').textContent=queue.length?`${number.format(items)} items · ${Object.keys(totals).length} material types · ${mode==='raw'?'Expanded to raw resources':'Direct crafting ingredients'}`:'Your queue is empty. Add an item to start.';
-    if(!queue.length){const row=element('tr'),cell=element('td','No materials yet.');cell.colSpan=4;row.append(cell);$('materials').append(row);}
+    $('queue-summary').textContent=queue.length?`${number.format(items)} crafts · ${Object.keys(totals).length} material types · ${mode==='raw'?'Basic materials expanded':'Direct crafting ingredients'}`:'Your queue is empty. Add an item to start.';
+    if(!queue.length){const row=element('tr'),cell=element('td','No materials yet.');cell.colSpan=2;row.append(cell);$('materials').append(row);}
     for(const id of new Set(queue.map(r=>r.id))){const recipe=recipeById.get(id),a=element('a',`${recipe.name} recipe ↗`);a.href=recipe.source;a.target='_blank';a.rel='noopener noreferrer';$('recipe-sources').append(a);}
     if(mode==='raw')for(const [name,page] of [['Electronics','Electronics'],['Polymer','Polymer'],['Metal','Metal_Ingot'],['Paste','Cementing_Paste']]){const a=element('a',name+' breakdown ↗');a.href='https://ark.wiki.gg/wiki/'+page;a.target='_blank';a.rel='noopener noreferrer';$('recipe-sources').append(a);}
   }
@@ -80,11 +71,33 @@
       switchSection(tabs[next].dataset.section,true);
     });
   });
-  for(const recipe of data.recipes){const option=element('option',recipe.name);option.value=recipe.id;$('craft-item').append(option);}
+  const categories=[...new Set(data.recipes.map(r=>r.category))].sort();
+  for(const category of categories){const option=element('option',category);option.value=category;$('craft-category').append(option);}
+  function renderChoices(){
+    const query=$('craft-search').value.trim().toLowerCase(),category=$('craft-category').value,previous=$('craft-item').value;
+    const matches=data.recipes.filter(r=>(category==='all'||r.category===category)&&r.name.toLowerCase().includes(query));
+    $('craft-item').replaceChildren();
+    for(const recipe of matches){const option=element('option',recipe.name);option.value=recipe.id;$('craft-item').append(option);}
+    if(matches.some(r=>r.id===previous))$('craft-item').value=previous;
+    else if(!query&&category==='all'&&matches.some(r=>r.id==='auto'))$('craft-item').value='auto';
+    $('catalogue-count').textContent=`${number.format(matches.length)} of ${number.format(data.recipes.length)} recipes`;
+    $('craft-item').disabled=!matches.length;document.querySelector('#queue-form button[type=submit]').disabled=!matches.length;
+    if(!matches.length){const option=element('option','No matching recipes');option.value='';$('craft-item').append(option);}
+    renderSelectedRecipe();
+  }
+  function renderSelectedRecipe(){
+    const recipe=recipeById.get($('craft-item').value),preview=$('selected-recipe');preview.replaceChildren();
+    if(!recipe)return;
+    const title=element('strong',`${recipe.name} · per craft`);preview.append(title);
+    const list=element('p',Object.entries(recipe.ingredients).map(([name,qty])=>`${number.format(qty)} × ${name}`).join(' · '));preview.append(list);
+  }
+  $('craft-search').addEventListener('input',renderChoices);$('craft-category').addEventListener('change',renderChoices);$('craft-item').addEventListener('change',renderSelectedRecipe);
+  renderChoices();
   $('queue-form').addEventListener('submit',event=>{
     event.preventDefault();const quantity=count($('craft-quantity').value),id=$('craft-item').value;
     const input=$('craft-quantity');input.setCustomValidity(quantity===null?'Choose a whole quantity between 1 and 100,000.':'');
     if(quantity===null){input.reportValidity();return;}
+    if(!recipeById.has(id)){message('Choose an item first.');return;}
     const existing=queue.find(row=>row.id===id);
     if(existing && existing.quantity+quantity>100000){message('Limit: 100,000 of each item per queue.');return;}
     if(existing)existing.quantity+=quantity;else queue.push({id,quantity});
@@ -97,8 +110,7 @@
   $('copy-materials').addEventListener('click',async()=>{
     const totals=calculate(queue,mode==='raw',polymer==='organic');
     if(!Object.keys(totals).length){message('Add items before copying a list.');return;}
-    const invalid=[...$('materials').querySelectorAll('input')].find(i=>!i.checkValidity());if(invalid){invalid.reportValidity();return;}
-    const text=['Raptor News · Crafting list',...queue.map(r=>`${r.quantity} × ${recipeById.get(r.id).name}`),'',mode==='raw'?'RAW MATERIALS':'CRAFTING COMPONENTS',...Object.entries(totals).sort(([a],[b])=>a.localeCompare(b)).map(([name,total])=>`${name}: ${Math.max(0,total-(stock[name]||0))} still needed (${total} total)`)].join('\n');
+    const text=['Raptor News · Crafting list',...queue.map(r=>`${r.quantity} crafts × ${recipeById.get(r.id).name}`),'',mode==='raw'?'BASIC MATERIALS EXPANDED':'CRAFTING COMPONENTS',...Object.entries(totals).sort(([a],[b])=>a.localeCompare(b)).map(([name,total])=>`${name}: ${total}`)].join('\n');
     try{await navigator.clipboard.writeText(text);message('Material list copied.');}catch{
       let field=$('manual-copy');if(!field){field=element('textarea');field.id='manual-copy';field.setAttribute('aria-label','Material list: select and copy');$('tools-message').after(field);}field.value=text;field.focus();field.select();message('Select and copy the list below.');
     }
@@ -120,3 +132,4 @@
   renderQueue();renderKibble();
   if(['crafting','kibble'].includes(location.hash.slice(1)))switchSection(location.hash.slice(1));
 })();
+
