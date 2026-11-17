@@ -6,9 +6,15 @@
   "registeredRecipes": 1322,
   "excludedTags": [
     "deprecated",
-    "cheat"
+    "cheat",
+    "generic"
   ],
-  "includedRecipes": 1276,
+  "includedRecipes": 1261,
   "quantity": "Ingredients per recipe execution; output batch size is not supplied by this dataset.",
-  "rawMode": "Only the previously verified basic material recipes are recursively expanded. All other ingredients remain finished components."
+  "rawMode": "Only the previously verified basic material recipes are recursively expanded. All other ingredients remain finished components.",
+  "itemImages": {
+    "source": "https://ark-unity.com/ark-survival-ascended/items/",
+    "matchedImages": 604,
+    "missingImages": "Rendered with an explicit unavailable placeholder; no unrelated item artwork is substituted."
+  }
 }

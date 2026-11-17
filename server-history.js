@@ -28,15 +28,26 @@
     const first=timeLabel(data.first_sample,true), last=timeLabel(data.last_sample,true);
     const age=Date.now()-Date.parse(data.last_sample);
     status.textContent=`${data.sample_count} readings · First: ${first} · Last: ${last}${age>15*60000 ? ' · Data is delayed' : ''}${data.persistent ? '' : ' · Temporary storage: history may reset on redeploy'}`;
-    const svg=node('svg',{viewBox:'0 0 900 260',role:'img','aria-label':`Server ${selectedServer} population over ${PERIODS[period]}`,class:'history-chart'});
+    const svg=node('svg',{viewBox:'0 0 900 320',role:'img','aria-label':`Server ${selectedServer} population over ${PERIODS[period]}`,class:'history-chart'});
     svg.append(node('title',{},`Player history for server ${selectedServer}`));
-    svg.append(node('desc',{},'Times use your device timezone. Gaps indicate missing readings. Focus a point and use the arrow keys to inspect readings.'));
-    const start=Date.parse(data.from), end=Date.parse(data.to), left=45, right=880, top=16, bottom=222;
-    const ymax=Math.max(10,...points.map(p=>Math.max(p.capacity,p.max,p.players)));
+    svg.append(node('desc',{},'Automatic population scale starting at zero. The time axis fits available readings within the chosen period. Gaps indicate missing readings. Focus a point and use arrow keys to inspect readings.'));
+    // Fit observed populations rather than the server capacity. Keep zero
+    // visible and use integer grid intervals, including for 0–3 player servers.
+    const firstTime=Date.parse(points[0].timestamp),lastTime=Date.parse(points[points.length-1].timestamp);
+    const minimumSpan=Math.max(10*60000,data.bucket_seconds*2000);
+    const span=Math.max(lastTime-firstTime,minimumSpan),padding=span*.04;
+    const periodStart=Date.parse(data.from),periodEnd=Date.parse(data.to);
+    let start=Math.max(periodStart,firstTime-padding),end=Math.min(periodEnd,lastTime+padding);
+    if(end-start<minimumSpan){const center=(firstTime+lastTime)/2;start=Math.max(periodStart,Math.min(center-minimumSpan/2,periodEnd-minimumSpan));end=Math.min(periodEnd,start+minimumSpan);}
+    const left=48,right=880,top=20,bottom=274;
+    const highest=Math.max(1,...points.map(p=>Math.max(p.max??p.players,p.players)));
+    const target=Math.max(4,highest*1.15),rough=target/4,power=10**Math.floor(Math.log10(rough));
+    const step=[1,2,2.5,5,10].map(n=>n*power).find(n=>n>=rough && Number.isInteger(n))||Math.ceil(rough);
+    const ymax=step*4;
     const x=p=>left+(Date.parse(p.timestamp)-start)/(end-start)*(right-left);
     const y=value=>bottom-value/ymax*(bottom-top);
     for(let i=0;i<=4;i++) {
-      const value=Math.round(ymax*i/4), yy=y(value);
+      const value=ymax*i/4, yy=y(value);
       svg.append(node('line',{x1:left,y1:yy,x2:right,y2:yy,class:'history-grid'}));
       svg.append(node('text',{x:left-8,y:yy+4,'text-anchor':'end'},value));
     }
@@ -46,14 +57,14 @@
     }
     let path='';
     points.forEach((p,i)=>{
-      const gap=i && Date.parse(p.timestamp)-Date.parse(points[i-1].timestamp)>data.bucket_seconds*2;
+      const gap=i && Date.parse(p.timestamp)-Date.parse(points[i-1].timestamp)>data.bucket_seconds*2000;
       path+=`${i===0||gap?'M':'L'}${x(p).toFixed(2)},${y(p.players).toFixed(2)} `;
     });
     svg.append(node('path',{d:path,class:'history-line'}));
     const circles=[];
     points.forEach((p,i)=>{
       const label=`${timeLabel(p.timestamp,true)} · ${p.players} players${p.min!==p.max?` (range ${p.min}–${p.max})`:''}`;
-      const circle=node('circle',{cx:x(p),cy:y(p.players),r:3,tabindex:i===0?'0':'-1','aria-label':label});
+      const circle=node('circle',{cx:x(p),cy:y(p.players),r:4,tabindex:i===0?'0':'-1','aria-label':label});
       circle.append(node('title',{},label));
       const inspect=()=>detail.textContent=label;
       circle.addEventListener('pointerenter',inspect);circle.addEventListener('pointerdown',inspect);circle.addEventListener('focus',inspect);
@@ -119,7 +130,7 @@
   document.addEventListener('DOMContentLoaded',()=>{
     panel=document.createElement('section');panel.className='server-history';panel.setAttribute('aria-labelledby','history-title');
     // All interpolated server and tribe values are assigned with textContent.
-    panel.innerHTML='<div class="history-header"><h3 id="history-title">Player history</h3><div class="history-controls"><label>Server <select id="history-server"></select></label><div class="history-ranges" role="group" aria-label="History period"></div><button id="history-refresh" type="button">Refresh</button></div></div><div class="history-stats"></div><p class="history-message" role="status" aria-live="polite"></p><div class="history-chart-wrap"></div><p class="history-point-detail" aria-live="polite"></p><p class="history-note">Readings every 5 minutes · Times use your device timezone · 7-day view uses 15-minute averages · Missing readings appear as gaps.</p>';
+    panel.innerHTML='<div class="history-header"><h3 id="history-title">Player history</h3><div class="history-controls"><label>Server <select id="history-server"></select></label><div class="history-ranges" role="group" aria-label="History period"></div><button id="history-refresh" type="button">Refresh</button></div></div><div class="history-stats"></div><p class="history-message" role="status" aria-live="polite"></p><div class="history-chart-wrap"></div><p class="history-point-detail" aria-live="polite"></p><p class="history-note">Automatic scale · Chart fits available readings within the selected period · Times use your device timezone · 7-day view uses 15-minute averages · Missing readings appear as gaps.</p>';
     document.querySelector('.bottom-panel > div').after(panel);
     select=panel.querySelector('select');status=panel.querySelector('.history-message');stats=panel.querySelector('.history-stats');chart=panel.querySelector('.history-chart-wrap');detail=panel.querySelector('.history-point-detail');
     const ranges=panel.querySelector('.history-ranges');
@@ -133,3 +144,4 @@
     document.addEventListener('visibilitychange',()=>{if(!document.hidden && Date.now()-lastFetch>60000)loadHistory();});
   });
 })();
+

@@ -19,6 +19,12 @@
   function save(){try{localStorage.setItem(KEY,JSON.stringify({queue,mode,polymer}));}catch{}}
   function message(text){$('tools-message').textContent=text;}
   function element(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;}
+  function itemImage(recipe,size=''){
+    const shell=element('span',undefined,'item-picture '+size);
+    const unavailable=()=>{shell.replaceChildren(element('span','No image','item-image-missing'));shell.setAttribute('aria-label','Image unavailable for '+recipe.name);};
+    if(!recipe.image){unavailable();return shell;}
+    const img=element('img');img.src=recipe.image;img.alt=recipe.name;img.width=64;img.height=64;img.loading='lazy';img.referrerPolicy='no-referrer';img.addEventListener('error',unavailable,{once:true});shell.append(img);return shell;
+  }
   function calculate(rows,raw=false,organic=false){
     const totals=Object.create(null);
     function add(name,quantity,trail=[]){
@@ -52,7 +58,7 @@
       const div=element('div',undefined,'queue-row'),name=element('span',recipeById.get(row.id).name),quantity=element('strong','× '+number.format(row.quantity)),remove=element('button','×');
       remove.type='button';remove.setAttribute('aria-label','Remove '+recipeById.get(row.id).name);
       remove.addEventListener('click',()=>{queue.splice(index,1);save();renderQueue();});
-      div.append(name,quantity,remove);$('queue').append(div);
+      const item=element('div',undefined,'queue-item');item.append(itemImage(recipeById.get(row.id),'small'),name);div.append(item,quantity,remove);$('queue').append(div);
     });
     if(!queue.length)$('queue').append(element('p','Add your first item above.','hint'));
     renderMaterials();
@@ -73,6 +79,7 @@
   });
   const categories=[...new Set(data.recipes.map(r=>r.category))].sort();
   for(const category of categories){const option=element('option',category);option.value=category;$('craft-category').append(option);}
+  let currentMatches=[],resultLimit=24;
   function renderChoices(){
     const query=$('craft-search').value.trim().toLowerCase(),category=$('craft-category').value,previous=$('craft-item').value;
     const matches=data.recipes.filter(r=>(category==='all'||r.category===category)&&r.name.toLowerCase().includes(query));
@@ -83,13 +90,28 @@
     $('catalogue-count').textContent=`${number.format(matches.length)} of ${number.format(data.recipes.length)} recipes`;
     $('craft-item').disabled=!matches.length;document.querySelector('#queue-form button[type=submit]').disabled=!matches.length;
     if(!matches.length){const option=element('option','No matching recipes');option.value='';$('craft-item').append(option);}
-    renderSelectedRecipe();
+    currentMatches=matches;resultLimit=24;
+    $('item-results').hidden=!query&&category==='all';
+    renderResultCards();renderSelectedRecipe();
   }
+  function renderResultCards(){
+    const root=$('item-results');root.replaceChildren();
+    if(root.hidden){$('more-items').hidden=true;return;}
+    for(const recipe of currentMatches.slice(0,resultLimit)){
+      const button=element('button',undefined,'item-result');button.type='button';button.dataset.recipe=recipe.id;button.setAttribute('aria-pressed',String(recipe.id===$('craft-item').value));
+      const label=element('span',undefined,'item-result-name');label.append(element('strong',recipe.name),element('small',recipe.category));button.append(itemImage(recipe),label);
+      button.addEventListener('click',()=>{$('craft-item').value=recipe.id;renderSelectedRecipe();});root.append(button);
+    }
+    if(!currentMatches.length)root.append(element('p','No matching items. Try another name or category.','hint'));
+    $('more-items').hidden=currentMatches.length<=resultLimit;$('more-items').textContent=`Show more (${Math.max(0,currentMatches.length-resultLimit)} remaining)`;
+  }
+  $('more-items').addEventListener('click',()=>{resultLimit+=24;renderResultCards();});
   function renderSelectedRecipe(){
     const recipe=recipeById.get($('craft-item').value),preview=$('selected-recipe');preview.replaceChildren();
     if(!recipe)return;
-    const title=element('strong',`${recipe.name} · per craft`);preview.append(title);
-    const list=element('p',Object.entries(recipe.ingredients).map(([name,qty])=>`${number.format(qty)} × ${name}`).join(' · '));preview.append(list);
+    const text=element('div'),title=element('strong',`${recipe.name} · per craft`);text.append(title);
+    const list=element('p',Object.entries(recipe.ingredients).map(([name,qty])=>`${number.format(qty)} × ${name}`).join(' · '));text.append(list);preview.append(itemImage(recipe,'large'),text);
+    $('item-results').querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.recipe===recipe.id)));
   }
   $('craft-search').addEventListener('input',renderChoices);$('craft-category').addEventListener('change',renderChoices);$('craft-item').addEventListener('change',renderSelectedRecipe);
   renderChoices();

@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="description" content="Plan ARK crafting resources and calculate kibble batches with Raptor News." />
   <title>ARK Tools · Raptor News</title>
-  <link rel="icon" href="logo.jpg" />
+  
   <link rel="stylesheet" href="site-tabs.css" />
   <link rel="stylesheet" href="ark-tools.css" />
   <script src="ark-tools-data.js" defer></script>
   <script src="ark-tools.js" defer></script>
+  <link rel="icon" href="favicon.ico?v=20261117" sizes="any" />
+  <link rel="icon" href="favicon-32.png?v=20261117" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261117" />
 </head>
 <body>
   <a class="skip-link" href="#tools-main">Skip to tools</a>
@@ -20,7 +23,7 @@
     <div class="tools-subnav" role="tablist" aria-label="ARK tool sections"><button role="tab" id="tab-crafting" aria-controls="panel-crafting" aria-selected="true" tabindex="0" data-section="crafting">01 <span>Resources</span></button><button role="tab" id="tab-kibble" aria-controls="panel-kibble" aria-selected="false" tabindex="-1" data-section="kibble">02 <span>Kibble kitchen</span></button></div>
     <section id="panel-crafting" class="tool-panel" role="tabpanel" aria-labelledby="tab-crafting">
       <div class="section-heading"><div><p class="eyebrow">BUILD SMARTER</p><h2>Resource planner</h2><p>Search the ASA crafting catalogue, add recipes to your queue, and total the materials.</p></div><span class="small-chip">Standard engrams</span></div>
-      <div class="planner-layout"><div class="card"><h3>Your crafting queue</h3><div class="catalogue-filters"><label>Search items<input id="craft-search" type="search" placeholder="Saddle, shotgun, foundation…" /></label><label>Category<select id="craft-category"><option value="all">All categories</option></select></label></div><p id="catalogue-count" class="hint" role="status" aria-live="polite"></p><form id="queue-form" class="queue-form"><label>Item<select id="craft-item"></select></label><label>Crafts<input id="craft-quantity" type="number" min="1" max="100000" step="1" value="100" required /></label><button class="primary" type="submit">+ Add to queue</button></form><div id="selected-recipe" class="selected-recipe"></div><div id="queue" class="queue-list"></div><p class="hint">Quantity counts recipe executions. Some ammunition and consumables produce multiple units per craft.</p></div>
+      <div class="planner-layout"><div class="card"><h3>Your crafting queue</h3><div class="catalogue-filters"><label>Search items<input id="craft-search" type="search" placeholder="Saddle, shotgun, foundation…" /></label><label>Category<select id="craft-category"><option value="all">All categories</option></select></label></div><p id="catalogue-count" class="hint" role="status" aria-live="polite"></p><div id="item-results" class="item-results" aria-label="Item search results"></div><button id="more-items" class="text-button more-items" type="button" hidden>Show more items</button><form id="queue-form" class="queue-form"><label>Item<select id="craft-item"></select></label><label>Crafts<input id="craft-quantity" type="number" min="1" max="100000" step="1" value="100" required /></label><button class="primary" type="submit">+ Add to queue</button></form><div id="selected-recipe" class="selected-recipe"></div><div id="queue" class="queue-list"></div><p class="hint">Quantity counts recipe executions. Some ammunition and consumables produce multiple units per craft.</p></div>
       <div class="card results-card"><div class="results-heading"><h3>Materials needed</h3><button id="copy-materials" class="text-button" type="button">Copy list</button></div><div class="mode-controls"><label>Show<select id="resource-mode"><option value="direct">Crafting components</option><option value="raw">Expand basic materials</option></select></label><label id="polymer-option" hidden>Polymer source<select id="polymer-mode"><option value="crafted">Craft regular Polymer</option><option value="organic">Gather Organic Polymer</option></select></label></div><p id="queue-summary" class="hint" role="status" aria-live="polite"></p><div class="table-scroll"><table><thead><tr><th scope="col">Material</th><th scope="col">Required</th></tr></thead><tbody id="materials"></tbody></table></div><p class="hint">Standard recipe costs per craft; fuel and blueprint multipliers are not included. Expanded mode breaks down electronics, polymer, ingots, cementing paste and Auto Turrets. Other ingredients stay as finished components.</p><div id="recipe-sources" class="source-links"></div></div></div>
     </section>
     <section id="panel-kibble" class="tool-panel" role="tabpanel" aria-labelledby="tab-kibble" hidden>
@@ -29,7 +32,7 @@
     </section>
     <p id="tools-message" class="tools-message" role="status" aria-live="polite"></p>
     <noscript><p class="card">Enable JavaScript to use the calculators. You can still visit the <a href="https://ark.wiki.gg/wiki/Recipes">recipe reference</a> or return to the <a href="./">Tribe Map</a>.</p></noscript>
-    <footer><span>RAPTOR NEWS · Community tools</span><p>ASA catalogue: <a href="https://usebeacon.app/Games/ArkSA/Mods/2399830/Engrams" target="_blank" rel="noopener noreferrer">Beacon official content data</a> (1,276 active recipes; snapshot checked 17 Nov 2026). Obsolete/admin recipes and third-party mods are excluded. Kibble: <a href="https://ark.wiki.gg/wiki/Kibble" target="_blank" rel="noopener noreferrer">ARK Community Wiki</a>.</p></footer>
+    <footer><span>RAPTOR NEWS · Community tools</span><p>ASA catalogue: <a href="https://usebeacon.app/Games/ArkSA/Mods/2399830/Engrams" target="_blank" rel="noopener noreferrer">Beacon official content data</a> (1,261 active recipes; snapshot checked 17 Nov 2026). Obsolete/admin recipes, generic placeholders and third-party mods are excluded. Item artwork: <a href="https://ark-unity.com/ark-survival-ascended/items/" target="_blank" rel="noopener noreferrer">ARK Unity</a> / Studio Wildcard; unavailable images are labelled. Kibble: <a href="https://ark.wiki.gg/wiki/Kibble" target="_blank" rel="noopener noreferrer">ARK Community Wiki</a>.</p></footer>
   </main>
 </body>
 </html>
