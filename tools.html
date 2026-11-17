@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Plan ARK crafting resources and calculate kibble batches with Raptor News." />
+  <title>ARK Tools · Raptor News</title>
+  <link rel="icon" href="logo.jpg" />
+  <link rel="stylesheet" href="site-tabs.css" />
+  <link rel="stylesheet" href="ark-tools.css" />
+  <script src="ark-tools-data.js" defer></script>
+  <script src="ark-tools.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#tools-main">Skip to tools</a>
+  <header class="tools-header"><a class="brand" href="./"><img src="logo.jpg" alt="" width="44" height="44" /><span>RAPTOR <strong>NEWS</strong><small>ARK OFFICIAL x1 COMMUNITY</small></span></a><a class="back-link" href="./">← Tribe Map</a></header>
+  <nav class="site-tabs" aria-label="Main navigation"><a href="./">Tribe Map</a><a href="tools.html" aria-current="page">ARK Tools</a><a href="news.html">News <span>NEW</span></a></nav>
+  <main id="tools-main">
+    <section class="tools-intro"><div><p class="eyebrow">PLAN THE GRIND</p><h1>Less counting.<br /><span>More surviving.</span></h1><p>Build your shopping list, prep your kibble, and get back to the ARK.</p></div><div class="intro-stamp"><span>ASA</span><strong>Survivor toolkit</strong><small>Standard engram recipes<br />Community wiki references</small></div></section>
+    <div class="tools-subnav" role="tablist" aria-label="ARK tool sections"><button role="tab" id="tab-crafting" aria-controls="panel-crafting" aria-selected="true" tabindex="0" data-section="crafting">01 <span>Resources</span></button><button role="tab" id="tab-kibble" aria-controls="panel-kibble" aria-selected="false" tabindex="-1" data-section="kibble">02 <span>Kibble kitchen</span></button></div>
+    <section id="panel-crafting" class="tool-panel" role="tabpanel" aria-labelledby="tab-crafting">
+      <div class="section-heading"><div><p class="eyebrow">BUILD SMARTER</p><h2>Resource planner</h2><p>From one turret to your whole defense. Add items and we’ll add up the materials.</p></div><span class="small-chip">Standard engrams</span></div>
+      <div class="planner-layout"><div class="card"><h3>Your crafting queue</h3><form id="queue-form" class="queue-form"><label>Item<select id="craft-item"></select></label><label>Quantity<input id="craft-quantity" type="number" min="1" max="100000" step="1" value="100" required /></label><button class="primary" type="submit">+ Add to queue</button></form><div id="queue" class="queue-list"></div><p class="hint">Heavy Auto Turret costs include an Auto Turret. Raw mode also expands that turret’s materials.</p></div>
+      <div class="card results-card"><div class="results-heading"><h3>Materials needed</h3><button id="copy-materials" class="text-button" type="button">Copy list</button></div><div class="mode-controls"><label>Show<select id="resource-mode"><option value="direct">Crafting components</option><option value="raw">Raw resources</option></select></label><label id="polymer-option" hidden>Polymer source<select id="polymer-mode"><option value="crafted">Craft regular Polymer</option><option value="organic">Gather Organic Polymer</option></select></label></div><p id="queue-summary" class="hint" role="status" aria-live="polite"></p><div class="table-scroll"><table><thead><tr><th scope="col">Material</th><th scope="col">Total</th><th scope="col">You have</th><th scope="col">Still need</th></tr></thead><tbody id="materials"></tbody></table></div><p class="hint">Enter stock to subtract what you already have. Fuel, ammunition and blueprint cost multipliers are not included. Raw mode uses metal ore and the standard mortar recipe for paste.</p><div id="recipe-sources" class="source-links"></div></div></div>
+    </section>
+    <section id="panel-kibble" class="tool-panel" role="tabpanel" aria-labelledby="tab-kibble" hidden>
+      <div class="section-heading"><div><p class="eyebrow">KEEP THE EGGS COMING</p><h2>Kibble kitchen</h2><p>Pick a tier and a batch size. Get the complete ingredient list.</p></div><span class="small-chip">6 kibble tiers</span></div>
+      <div class="kibble-layout"><div class="card"><div id="kibble-tiers" class="kibble-tiers" role="group" aria-label="Kibble tier"></div><label class="batch-label">Kibble to make<input id="kibble-quantity" type="number" min="1" max="100000" step="1" value="10" /></label><p class="hint">Cook in a Cooking Pot or Industrial Cooker. Supply water for each recipe; an irrigated cooker supplies it automatically. Listed quantities are ingredients, not containers.</p></div><div class="card"><p class="eyebrow" id="egg-size"></p><h3 id="kibble-title"></h3><div id="kibble-ingredients" class="ingredient-grid" aria-live="polite"></div><p class="hint">Jerky, Focal Chili and Lazarus Chowder are listed as finished ingredients. Recipe quantities do not estimate how much kibble a tame will eat.</p><a id="kibble-source" class="source-link" href="https://ark.wiki.gg/wiki/Kibble" target="_blank" rel="noopener noreferrer">Check recipe on the community wiki ↗</a></div></div>
+    </section>
+    <p id="tools-message" class="tools-message" role="status" aria-live="polite"></p>
+    <noscript><p class="card">Enable JavaScript to use the calculators. You can still visit the <a href="https://ark.wiki.gg/wiki/Recipes">recipe reference</a> or return to the <a href="./">Tribe Map</a>.</p></noscript>
+    <footer><span>RAPTOR NEWS · Community tools</span><p>Recipe data checked 17 Nov 2026 against the <a href="https://ark.wiki.gg/" target="_blank" rel="noopener noreferrer">ARK Official Community Wiki</a>. This reference is manually maintained; game updates may change recipes.</p></footer>
+  </main>
+</body>
+</html>
