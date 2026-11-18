@@ -43,13 +43,14 @@
     try{
       const response=await fetch(API+'/api/map?format=2',{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error();const data=await response.json();
       if(!data.map){status.textContent=data.sync_status==='keeping_previous_map'?'New map could not be read reliably · Showing saved map':'Automatic map sync enabled · Showing saved map while the latest post is processed';return;}
-      const map=data.map;
+      const map=window.RaptorMapInteractions?.review(data.map)||data.map;
       const pending=map.geometry_status==='pending',stamp=(map.geometry_status||'ready')+':'+(map.updated_at||'');
       if(map.revision!==revision||stamp!==geometryStamp){
         const {newNodes,newEdges}=prepare(map),image=new Image();image.src=API+map.image_path;await image.decode();
         if(pending){
           const img=document.getElementById('static-map-img');img.src=image.src;img.width=map.width;img.height=map.height;
           nodes=[];revision=map.revision;geometryStamp=stamp;window.RaptorMap.setNodes([]);
+          window.RaptorMapInteractions?.clear();
         }else{
         // Commit the bitmap, hotspots, logos and relationships in one render.
         for(const node of newNodes){
@@ -67,6 +68,7 @@
         Object.entries(TRIBE_DB).forEach(([id,t])=>{if(!mapped.has(id)){t.offMap=true;t.allies=[];t.friendly=[];t.enemies=[];t.bloc='Not present in latest map';}});
         const img=document.getElementById('static-map-img');img.src=image.src;img.width=map.width;img.height=map.height;
         nodes=newNodes;revision=map.revision;geometryStamp=stamp;window.RaptorMap.setNodes(nodes);renderQuickTrackedList();
+        window.RaptorMapInteractions?.render(map,newNodes,newEdges);
         applyLibrary();
         if(TRIBE_DB[currentTribe])window.selectTribe(currentTribe,{preserveServer:true});
         }
