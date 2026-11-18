@@ -4,7 +4,7 @@
   const types={ally:{label:'Allies',color:'#00dce8'},friendly:{label:'Friends',color:'#2673ff'},enemy:{label:'Enemies',color:'#ff334d'}};
   const normal=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
   const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
-  let nodes=[],revision='',status,loading=false;
+  let nodes=[],revision='',geometryStamp='',status,loading=false;
   let library=[];
   function aliases(){
     const lookup=new Map();for(const [id,t] of Object.entries(TRIBE_DB))for(const name of [id,t.name,t.alias])if(name)lookup.set(normal(name),id);
@@ -41,11 +41,16 @@
   async function sync(){
     if(loading)return;loading=true;
     try{
-      const response=await fetch(API+'/api/map',{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error();const data=await response.json();
+      const response=await fetch(API+'/api/map?format=2',{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error();const data=await response.json();
       if(!data.map){status.textContent=data.sync_status==='keeping_previous_map'?'New map could not be read reliably · Showing saved map':'Automatic map sync enabled · Showing saved map while the latest post is processed';return;}
       const map=data.map;
-      if(map.revision!==revision){
+      const pending=map.geometry_status==='pending',stamp=(map.geometry_status||'ready')+':'+(map.updated_at||'');
+      if(map.revision!==revision||stamp!==geometryStamp){
         const {newNodes,newEdges}=prepare(map),image=new Image();image.src=API+map.image_path;await image.decode();
+        if(pending){
+          const img=document.getElementById('static-map-img');img.src=image.src;img.width=map.width;img.height=map.height;
+          nodes=[];revision=map.revision;geometryStamp=stamp;window.RaptorMap.setNodes([]);
+        }else{
         // Commit the bitmap, hotspots, logos and relationships in one render.
         for(const node of newNodes){
           if(node.group)continue;
@@ -61,11 +66,12 @@
         const mapped=new Set(newNodes.filter(n=>!n.group).map(n=>n.id));
         Object.entries(TRIBE_DB).forEach(([id,t])=>{if(!mapped.has(id)){t.offMap=true;t.allies=[];t.friendly=[];t.enemies=[];t.bloc='Not present in latest map';}});
         const img=document.getElementById('static-map-img');img.src=image.src;img.width=map.width;img.height=map.height;
-        nodes=newNodes;revision=map.revision;window.RaptorMap.setNodes(nodes);renderQuickTrackedList();
+        nodes=newNodes;revision=map.revision;geometryStamp=stamp;window.RaptorMap.setNodes(nodes);renderQuickTrackedList();
         applyLibrary();
         if(TRIBE_DB[currentTribe])window.selectTribe(currentTribe,{preserveServer:true});
+        }
       }
-      status.replaceChildren(el('span',`Map published ${new Date(map.published_at).toLocaleString()} · ${nodes.filter(n=>!n.group).length} tribes · `));
+      status.replaceChildren(el('span',`Map published ${new Date(map.published_at).toLocaleString()} · ${pending?'New image loaded · Interactive logos are being updated':nodes.filter(n=>!n.group).length+' tribes'} · `));
       const source=el('a','Discord source ↗');source.href='https://discord.com/channels/1343348944427815013/1343693976317988935/'+map.source_url.split('/').pop();source.target='_blank';source.rel='noopener noreferrer';status.append(source);
       if(data.sync_status==='keeping_previous_map')status.append(el('span',' · Keeping this version: newer map needs a clearer reading'));
     }catch{status.textContent='Showing last loaded map · Automatic sync will retry';}
@@ -76,8 +82,10 @@
     nodes=MAP_NODES.map(n=>({...n,name:TRIBE_DB[n.id]?.name}));
     status=el('p','Checking latest Tribe Map post…');status.className='map-sync-status';status.setAttribute('role','status');
     document.getElementById('map-viewport').before(status);
-    sync();syncLibrary();setInterval(()=>{if(!document.hidden)sync();},120000);
+    const refresh=el('button','Refresh map');refresh.type='button';refresh.className='map-refresh';refresh.addEventListener('click',sync);status.after(refresh);
+    sync();syncLibrary();setInterval(()=>{if(!document.hidden)sync();},30000);
     setInterval(()=>{if(!document.hidden)syncLibrary();},600000);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync();});
+    window.addEventListener('focus',sync);window.addEventListener('pageshow',sync);window.addEventListener('online',sync);
   });
 })();
