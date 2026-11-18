@@ -1,5 +1,10 @@
 (() => {
   'use strict';
+  const embedded=new URLSearchParams(location.search).get('embedded')==='1';
+  if(embedded){
+    document.body.classList.add('chat-embedded');
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')parent.postMessage({type:'raptor-chat-close'},location.origin);});
+  }
   const API='https://bot-ark-production-a0afb716.up.railway.app', $=id=>document.getElementById(id);
   let configured=false,busy=false,history=[],sequence=0;
   const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
