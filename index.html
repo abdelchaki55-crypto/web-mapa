@@ -89,8 +89,9 @@
       display: none !important;
     }
   </style>
-  <link rel="stylesheet" href="interactive-map.css" />
-  <link rel="stylesheet" href="site-tabs.css" />
+  <link rel="stylesheet" href="interactive-map.css?v=20261118-1" />
+  <link rel="stylesheet" href="live-map.css?v=20261118-1" />
+  <link rel="stylesheet" href="site-tabs.css?v=20261118-1" />
   <link rel="icon" href="favicon.ico?v=20261117" sizes="any" />
   <link rel="icon" href="favicon-32.png?v=20261117" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261117" />
@@ -135,7 +136,7 @@
   </header>
 
 
-  <nav class="site-tabs" aria-label="Main navigation"><a href="./" aria-current="page">Tribe Map</a><a href="tools.html">ARK Tools</a><a href="news.html">News <span>NEW</span></a></nav>
+  <nav class="site-tabs" aria-label="Main navigation"><a href="./" aria-current="page">Tribe Map</a><a href="tools.html">ARK Tools</a><a href="news.html">News <span>NEW</span></a><a href="chat.html">AI Chat</a></nav>
 
   <!-- Static PNG Map Container -->
   <main class="w-full p-2 sm:p-4" style="background-color: var(--canvas-bg);">
@@ -1098,8 +1099,10 @@
       setInterval(() => window.syncOfficialServers(false), 60000);
     });
   </script>
-  <script src="interactive-map.js"></script>
+  <script src="interactive-map.js?v=20261118-1"></script>
+  <script src="live-map.js?v=20261118-1"></script>
   <link rel="stylesheet" href="server-history.css?v=20261117-3" />
   <script src="server-history.js?v=20261117-3"></script>
 </body>
 </html>
+

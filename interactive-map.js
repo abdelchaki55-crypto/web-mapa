@@ -27,6 +27,7 @@ const MAP_NODES = [{"id": "bvs", "x": 13.0714, "y": 5.7143, "size": 4.7143}, {"i
   window.selectTribe = function(id) {
     if (!TRIBE_DB[id]) return;
     originalSelect(id);
+    document.dispatchEvent(new CustomEvent('raptor-tribe-selected',{detail:{id}}));
     buttons.forEach((button, key) => button.setAttribute('aria-pressed', String(key === id)));
     const status = document.getElementById('map-selection');
     if (status) status.textContent = `Selected: ${TRIBE_DB[id].name} · ${TRIBE_DB[id].bloc}`;
@@ -47,7 +48,9 @@ const MAP_NODES = [{"id": "bvs", "x": 13.0714, "y": 5.7143, "size": 4.7143}, {"i
   }
   document.addEventListener('DOMContentLoaded', () => {
     const layer = document.getElementById('map-hotspots');
-    MAP_NODES.forEach(node => {
+    function rebuildNodes(nodes) {
+    layer.replaceChildren();buttons.clear();
+    nodes.filter(node=>!node.group).forEach(node => {
       const info = TRIBE_DB[node.id];
       if (!info) return;
       const button = document.createElement('button');
@@ -59,6 +62,9 @@ const MAP_NODES = [{"id": "bvs", "x": 13.0714, "y": 5.7143, "size": 4.7143}, {"i
       button.addEventListener('click', () => showDetails(node.id));
       layer.append(button); buttons.set(node.id,button);
     });
+    }
+    rebuildNodes(MAP_NODES);
+    window.RaptorMap={setNodes:rebuildNodes,showDetails};
     let zoom = 1;
     const stage = document.getElementById('map-stage');
     const viewport = document.getElementById('map-viewport');
