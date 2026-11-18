@@ -65,25 +65,6 @@ const MAP_NODES = [{"id": "bvs", "x": 13.0714, "y": 5.7143, "size": 4.7143}, {"i
     }
     rebuildNodes(MAP_NODES);
     window.RaptorMap={setNodes:rebuildNodes,showDetails};
-    let zoom = 1;
-    const stage = document.getElementById('map-stage');
-    const viewport = document.getElementById('map-viewport');
-    function setZoom(value) {
-      const previous = zoom;
-      const centerX = viewport.scrollLeft + viewport.clientWidth / 2;
-      const centerY = viewport.scrollTop + viewport.clientHeight / 2;
-      zoom = Math.max(1,Math.min(3,value));
-      stage.style.width = `${zoom*100}%`;
-      document.getElementById('map-zoom-level').value = `${Math.round(zoom*100)}%`;
-      document.getElementById('map-zoom-out').disabled = zoom <= 1;
-      document.getElementById('map-zoom-in').disabled = zoom >= 3;
-      viewport.scrollLeft = centerX * zoom / previous - viewport.clientWidth / 2;
-      viewport.scrollTop = centerY * zoom / previous - viewport.clientHeight / 2;
-    }
-    document.getElementById('map-zoom-in').addEventListener('click',()=>setZoom(zoom+.5));
-    document.getElementById('map-zoom-out').addEventListener('click',()=>setZoom(zoom-.5));
-    document.getElementById('map-fit').addEventListener('click',()=>{setZoom(1);viewport.scrollTo(0,0);});
-    setZoom(1);
     const search = document.getElementById('map-search');
     const results = document.getElementById('map-search-results');
     const normalize = value => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');

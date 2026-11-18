@@ -71,7 +71,7 @@
 
     .map-wrapper {
       width: 100%;
-      max-width: 1300px;
+      max-width: none;
       margin: 0 auto;
     }
 
@@ -89,7 +89,7 @@
       display: none !important;
     }
   </style>
-  <link rel="stylesheet" href="interactive-map.css?v=20261118-1" />
+  <link rel="stylesheet" href="interactive-map.css?v=20261118-2" />
   <link rel="stylesheet" href="live-map.css?v=20261118-3" />
   <link rel="stylesheet" href="site-tabs.css?v=20261118-1" />
   <link rel="icon" href="favicon.ico?v=20261117" sizes="any" />
@@ -145,14 +145,9 @@
         <label class="map-search-label" for="map-search">Find a tribe
           <input id="map-search" class="ui-input" type="search" placeholder="Search tribes…" autocomplete="off" />
         </label>
-        <div class="map-zoom-controls">
-          <button id="map-zoom-out" type="button" aria-label="Zoom out">−</button>
-          <output id="map-zoom-level" aria-live="polite">100%</output>
-          <button id="map-zoom-in" type="button" aria-label="Zoom in">+</button>
-          <button id="map-fit" type="button">Fit map</button>
-        </div>
+
       </div>
-      <p class="map-help">Select a logo for tribe details. Use + to zoom and scroll to explore the map.</p>
+      <p class="map-help">Select a tribe logo to view its details.</p>
       <div id="map-search-results" aria-label="Tribe search results" hidden></div>
       <div id="map-viewport" tabindex="0" aria-label="Interactive tribe map. Tab to a tribe and press Enter to select.">
         <div id="map-stage">
@@ -1089,7 +1084,7 @@
       setInterval(() => window.syncOfficialServers(false), 60000);
     });
   </script>
-  <script src="interactive-map.js?v=20261118-1"></script>
+  <script src="interactive-map.js?v=20261118-2"></script>
   <script src="live-map.js?v=20261118-3"></script>
   <link rel="stylesheet" href="server-history.css?v=20261117-3" />
   <link rel="stylesheet" href="tribe-layout.css?v=20261118-2" />
