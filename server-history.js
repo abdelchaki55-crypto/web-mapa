@@ -28,7 +28,7 @@
     const first=timeLabel(data.first_sample,true), last=timeLabel(data.last_sample,true);
     const age=Date.now()-Date.parse(data.last_sample);
     status.textContent=`${data.sample_count} readings · First: ${first} · Last: ${last}${age>15*60000 ? ' · Data is delayed' : ''}${data.persistent ? '' : ' · Temporary storage: history may reset on redeploy'}`;
-    const svg=node('svg',{viewBox:'0 0 900 320',role:'img','aria-label':`Server ${selectedServer} population over ${PERIODS[period]}`,class:'history-chart'});
+    const svg=node('svg',{viewBox:'0 0 900 220',role:'img','aria-label':`Server ${selectedServer} population over ${PERIODS[period]}`,class:'history-chart'});
     svg.append(node('title',{},`Player history for server ${selectedServer}`));
     svg.append(node('desc',{},'Automatic population scale starting at zero. The time axis fits available readings within the chosen period. Gaps indicate missing readings. Focus a point and use arrow keys to inspect readings.'));
     // Fit observed populations rather than the server capacity. Keep zero
@@ -39,7 +39,7 @@
     const periodStart=Date.parse(data.from),periodEnd=Date.parse(data.to);
     let start=Math.max(periodStart,firstTime-padding),end=Math.min(periodEnd,lastTime+padding);
     if(end-start<minimumSpan){const center=(firstTime+lastTime)/2;start=Math.max(periodStart,Math.min(center-minimumSpan/2,periodEnd-minimumSpan));end=Math.min(periodEnd,start+minimumSpan);}
-    const left=48,right=880,top=20,bottom=274;
+    const left=48,right=880,top=14,bottom=180;
     const highest=Math.max(1,...points.map(p=>Math.max(p.max??p.players,p.players)));
     const target=Math.max(4,highest*1.15),rough=target/4,power=10**Math.floor(Math.log10(rough));
     const step=[1,2,2.5,5,10].map(n=>n*power).find(n=>n>=rough && Number.isInteger(n))||Math.ceil(rough);

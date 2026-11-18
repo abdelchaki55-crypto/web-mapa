@@ -166,10 +166,10 @@
 
   <!-- Bottom Full-Width Tribe Details & Live Multi-Server Panel -->
   <section class="bottom-panel w-full p-4 sm:p-6 z-10">
-    <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <div id="tribe-dashboard" class="max-w-[1500px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4">
 
       <!-- Column 1 (4 cols) -->
-      <div class="lg:col-span-4 ui-card rounded-2xl p-4 flex flex-col justify-between gap-3">
+      <div id="tribe-details-card" class="lg:col-span-3 ui-card rounded-2xl p-4 flex flex-col justify-between gap-3">
         <div>
           <div class="flex items-center justify-between pb-2.5 mb-3 border-b" style="border-color: var(--border-ui);">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-sky-400">Selected Tribe Details</span>
@@ -229,7 +229,7 @@
       </div>
 
       <!-- Column 2 (4 cols) -->
-      <div class="lg:col-span-4 ui-card rounded-2xl p-4 flex flex-col">
+      <div id="tribe-servers-card" class="lg:col-span-3 ui-card rounded-2xl p-4 flex flex-col">
         <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b" style="border-color: var(--border-ui);">
           <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">📡 Official Servers (Railway Live)</span>
         </div>
@@ -247,7 +247,7 @@
       </div>
 
       <!-- Column 3 (4 cols) -->
-      <div class="lg:col-span-4 ui-card rounded-2xl p-4 flex flex-col gap-3">
+      <div id="tribe-picker-card" class="lg:col-span-6 ui-card rounded-2xl p-4 flex flex-col gap-3">
         <div>
           <div class="flex items-center justify-between pb-1.5 mb-2 border-b" style="border-color: var(--border-ui);">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-400">Tribes on Map (Live Pop)</span>
@@ -1102,7 +1102,8 @@
   <script src="interactive-map.js?v=20261118-1"></script>
   <script src="live-map.js?v=20261118-2"></script>
   <link rel="stylesheet" href="server-history.css?v=20261117-3" />
-  <script src="server-history.js?v=20261117-3"></script>
+  <link rel="stylesheet" href="tribe-layout.css?v=20261118-1" />
+  <script src="server-history.js?v=20261118-1"></script>
 </body>
 </html>
 
