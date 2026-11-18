@@ -22,7 +22,8 @@
       if(g.hidden)continue;
       const title=`${a.name||TRIBE_DB[a.id]?.name||a.id} ↔ ${b.name||TRIBE_DB[b.id]?.name||b.id} · ${types[edge.type].label}${edge.qualifier?' · '+edge.qualifier:''}`;
       const hit=document.createElementNS(NS,'line');
-      for(const [k,v] of Object.entries({x1:a.x,y1:a.y,x2:b.x,y2:b.y}))hit.setAttribute(k,v);
+      const start=edge.start||a,end=edge.end||b;
+      for(const [k,v] of Object.entries({x1:start.x,y1:start.y,x2:end.x,y2:end.y}))hit.setAttribute(k,v);
       hit.setAttribute('class','connection-hit');hit.setAttribute('tabindex','0');hit.setAttribute('role','button');hit.setAttribute('aria-label',title);
       const line=hit.cloneNode(false);line.removeAttribute('tabindex');line.removeAttribute('role');line.removeAttribute('aria-label');line.setAttribute('class','connection-visible');line.style.stroke=types[edge.type].color;
       const tip=document.createElementNS(NS,'title');tip.textContent=title;hit.append(tip);
@@ -37,6 +38,9 @@
     return lookup;
   }
   function applyLibrary(){
+    // A newer map may deliberately use a newer logo than the library. Its exact
+    // crops take priority; library originals remain available for the saved map.
+    if(revision)return;
     const lookup=aliases();let changed=false;
     for(const logo of library){
       if(!/^\/api\/logos\/assets\/[a-f0-9]{24}\.png$/.test(logo.path||''))continue;

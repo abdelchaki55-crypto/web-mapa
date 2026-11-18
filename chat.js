@@ -12,7 +12,7 @@
       configured=Boolean(data.configured);$('archive-sources').replaceChildren();
       for(const source of data.sources||[]){const box=el('div',undefined,'source-status'),a=el('a',source.name+' ↗'),url=sourceUrl(source.url);if(url){a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(a);}box.append(el('small',`${source.messages.toLocaleString()} messages · ${source.complete?'History imported':'Importing older posts'}${source.available?'':' · Source delayed'}`));$('archive-sources').append(box);}
       $('archive-progress').textContent=`${Number(data.total_messages||0).toLocaleString()} archived messages · ${data.backfill_complete?'Available history imported':'Historical import in progress'}`;
-      $('provider-status').textContent=configured?'Gemini connected · Answers include dated sources':'AI is awaiting server configuration. Archive search is still available.';
+      $('provider-status').textContent=configured?'Gemini enabled · Answers include dated sources':'AI is awaiting server configuration. Archive search is still available.';
       buttons();
     }catch{$('archive-progress').textContent='Archive status is temporarily unavailable.';$('provider-status').textContent='Please retry shortly.';}
   }
@@ -30,7 +30,7 @@
     if(busy||(!search&&!configured))return;
     const seq=++sequence,prior=history.slice(-6);busy=true;buttons();$('chat-notice').textContent='';addMessage('user',question);
     const loading=el('p',search?'Searching archived messages…':'Finding sources and asking Gemini…','chat-loading');$('chat-messages').append(loading);$('chat-messages').scrollTop=$('chat-messages').scrollHeight;
-    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),65000);
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),90000);
     try{
       const response=await fetch(search?API+'/api/knowledge/search?q='+encodeURIComponent(question):API+'/api/chat',search?{signal:controller.signal,cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,history:prior}),signal:controller.signal});
       const data=await response.json();if(!response.ok)throw Error(data.error||'unavailable');if(seq!==sequence)return;
