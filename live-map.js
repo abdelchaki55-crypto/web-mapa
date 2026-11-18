@@ -22,7 +22,7 @@
       const id=TRIBE_DB[logo.tribe_id]?logo.tribe_id:lookup.get(normal(label));
       if(id&&TRIBE_DB[id]&&TRIBE_DB[id].logo!==API+logo.path){TRIBE_DB[id].logo=API+logo.path;changed=true;}
     }
-    if(changed){renderQuickTrackedList();if(TRIBE_DB[currentTribe])window.selectTribe(currentTribe);}
+    if(changed){renderQuickTrackedList();if(TRIBE_DB[currentTribe])window.selectTribe(currentTribe,{preserveServer:true});}
   }
   async function syncLibrary(){
     try{const response=await fetch(API+'/api/logos',{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!response.ok)return;const data=await response.json();if(Array.isArray(data.items)){library=data.items;applyLibrary();}}catch{}
@@ -63,7 +63,7 @@
         const img=document.getElementById('static-map-img');img.src=image.src;img.width=map.width;img.height=map.height;
         nodes=newNodes;revision=map.revision;window.RaptorMap.setNodes(nodes);renderQuickTrackedList();
         applyLibrary();
-        if(TRIBE_DB[currentTribe])window.selectTribe(currentTribe);
+        if(TRIBE_DB[currentTribe])window.selectTribe(currentTribe,{preserveServer:true});
       }
       status.replaceChildren(el('span',`Map published ${new Date(map.published_at).toLocaleString()} · ${nodes.filter(n=>!n.group).length} tribes · `));
       const source=el('a','Discord source ↗');source.href='https://discord.com/channels/1343348944427815013/1343693976317988935/'+map.source_url.split('/').pop();source.target='_blank';source.rel='noopener noreferrer';status.append(source);

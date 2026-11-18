@@ -4,7 +4,7 @@
   const NS = 'http://www.w3.org/2000/svg';
   const PERIODS = {'6h':'6 hours','24h':'24 hours','7d':'7 days'};
   let selectedServer = '', period = '24h', tribe = '', controller, panel, select, status, stats, chart, detail;
-  let lastFetch = 0, requestNumber = 0;
+  let lastFetch = 0, requestNumber = 0, standaloneServer = '';
   function node(tag, attrs={}, text) {
     const el=document.createElementNS(NS,tag);
     Object.entries(attrs).forEach(([key,value])=>el.setAttribute(key,String(value)));
@@ -109,12 +109,13 @@
       const id=label?.textContent.match(/^#(\d+)$/)?.[1];
       if(!id || card.querySelector('.history-server-button'))return;
       const button=document.createElement('button');button.type='button';button.className='history-server-button';button.textContent='📈 History';button.setAttribute('aria-label',`View population history for server ${id}`);
-      button.addEventListener('click',()=>{selectedServer=id;select.value=id;loadHistory();panel.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});});
+      button.addEventListener('click',()=>window.RaptorHistory.showServer(id));
       card.append(button);
     });
   }
   function updateTribe(id, force=false) {
     if(!panel)return;
+    if(standaloneServer){addServerButtons();return;}
     const servers=[...new Set(getTribeServers(id).map(raw=>parseServerToken(raw).cleanNum).filter(n=>/^\d{1,5}$/.test(n)))];
     const changed=tribe!==id || !servers.includes(selectedServer);
     tribe=id; if(changed)selectedServer=servers[0]||'';
@@ -126,7 +127,20 @@
     if(changed||force||Date.now()-lastFetch>60000)loadHistory();
   }
   const previousSelect=window.selectTribe;
-  window.selectTribe=function(id){previousSelect(id);if(TRIBE_DB[id])updateTribe(id);};
+  window.selectTribe=function(id,options){
+    if(!options?.preserveServer)standaloneServer='';
+    previousSelect(id,options);if(TRIBE_DB[id])updateTribe(id);
+  };
+  window.RaptorHistory={showServer(id){
+    id=String(id);if(!panel||!/^\d{1,5}$/.test(id))return false;
+    standaloneServer=id;selectedServer=id;
+    const option=document.createElement('option');option.value=id;option.textContent='#'+id;
+    select.replaceChildren(option);select.disabled=false;select.value=id;
+    document.getElementById('history-title').textContent='Player history · Server #'+id;
+    loadHistory();
+    panel.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+    return true;
+  }};
   document.addEventListener('DOMContentLoaded',()=>{
     panel=document.createElement('section');panel.className='server-history';panel.setAttribute('aria-labelledby','history-title');
     // All interpolated server and tribe values are assigned with textContent.

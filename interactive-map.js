@@ -24,9 +24,9 @@ const MAP_NODES = [{"id": "bvs", "x": 13.0714, "y": 5.7143, "size": 4.7143}, {"i
     });
   }
   renderQuickTrackedList = function() { originalRender(); addListLogos(); };
-  window.selectTribe = function(id) {
+  window.selectTribe = function(id,options) {
     if (!TRIBE_DB[id]) return;
-    originalSelect(id);
+    originalSelect(id,options);
     document.dispatchEvent(new CustomEvent('raptor-tribe-selected',{detail:{id}}));
     buttons.forEach((button, key) => button.setAttribute('aria-pressed', String(key === id)));
     const status = document.getElementById('map-selection');
@@ -64,27 +64,7 @@ const MAP_NODES = [{"id": "bvs", "x": 13.0714, "y": 5.7143, "size": 4.7143}, {"i
     });
     }
     rebuildNodes(MAP_NODES);
-    window.RaptorMap={setNodes:rebuildNodes,showDetails};
-    const search = document.getElementById('map-search');
-    const results = document.getElementById('map-search-results');
-    const normalize = value => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
-    search.addEventListener('input',()=>{
-      const query = normalize(search.value);
-      results.replaceChildren(); results.hidden = !query;
-      const matches = Object.entries(TRIBE_DB).filter(([id,info]) => query && normalize(`${info.name} ${info.alias||''} ${id}`).includes(query));
-      buttons.forEach((button,id)=>button.classList.toggle('search-match', matches.some(([key])=>key===id)));
-      matches.forEach(([id,info])=>{
-        const button = document.createElement('button'); button.type='button';button.className='tribe-result';
-        if (info.logo) {const img=document.createElement('img');img.src=info.logo;img.alt='';button.append(img);}
-        const name=document.createElement('span');name.textContent=info.name;button.append(name);
-        button.addEventListener('click',()=>showDetails(id));results.append(button);
-      });
-      if(query && !matches.length) results.textContent='No tribes found.';
-    });
-    search.addEventListener('keydown',event=>{
-      if(event.key==='Escape'){search.value='';search.dispatchEvent(new Event('input'));}
-      if(event.key==='Enter'){const first=results.querySelector('button');if(first){event.preventDefault();first.click();}}
-    });
+    window.RaptorMap={setNodes:rebuildNodes,showDetails,highlight(ids){buttons.forEach((button,id)=>button.classList.toggle('search-match',ids.includes(id)));}};
     window.selectTribe(currentTribe);
   });
 })();

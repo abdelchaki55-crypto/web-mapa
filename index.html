@@ -95,7 +95,7 @@
   <link rel="icon" href="favicon.ico?v=20261117" sizes="any" />
   <link rel="icon" href="favicon-32.png?v=20261117" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261117" />
-<link rel="stylesheet" href="chat-widget.css?v=20261118-1" /><script src="chat-widget.js?v=20261118-1" defer></script><link rel="stylesheet" href="community.css?v=20261118-1" /></head>
+<link rel="stylesheet" href="chat-widget.css?v=20261118-1" /><script src="chat-widget.js?v=20261118-1" defer></script><link rel="stylesheet" href="community.css?v=20261118-1" /><link rel="stylesheet" href="directory-search.css?v=20261118-1" /></head>
 <body class="">
 
   <!-- Top Control Bar -->
@@ -142,13 +142,15 @@
   <main class="w-full p-2 sm:p-4" style="background-color: var(--canvas-bg);">
     <div class="map-wrapper rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
       <div class="map-toolbar" aria-label="Map controls">
-        <label class="map-search-label" for="map-search">Find a tribe
-          <input id="map-search" class="ui-input" type="search" placeholder="Search tribes…" autocomplete="off" />
+        <label class="map-search-label" for="map-search">Find a server or tribe
+          <input id="map-search" class="ui-input" type="search" placeholder="Server number or tribe name… e.g. 2387, Boom Evil" autocomplete="off" maxlength="100" aria-controls="map-search-results" />
         </label>
+        <div class="directory-filters" role="group" aria-label="Search category"><button type="button" data-directory-mode="all" aria-pressed="true">All</button><button type="button" data-directory-mode="servers" aria-pressed="false">Servers</button><button type="button" data-directory-mode="tribes" aria-pressed="false">Tribes</button></div>
 
       </div>
       <p class="map-help">Select a tribe logo to view its details.</p>
-      <div id="map-search-results" aria-label="Tribe search results" hidden></div>
+      <div id="map-search-results" aria-label="Server and tribe search results" hidden></div>
+      <section id="directory-server-detail" class="directory-server-detail" aria-label="Selected server" hidden></section>
       <div id="map-viewport" tabindex="0" aria-label="Interactive tribe map. Tab to a tribe and press Enter to select.">
         <div id="map-stage">
           <img id="static-map-img" src="mapa.jpg" alt="ARK tribe alliances and rivalries. Select a tribe logo for details." class="w-full h-auto block object-contain" width="1920" height="1080" />
@@ -863,7 +865,8 @@
       }
 
       renderQuickTrackedList();
-      window.selectTribe(currentTribe);
+      window.selectTribe(currentTribe,{preserveServer:true});
+      document.dispatchEvent(new CustomEvent('raptor-servers-updated',{detail:{available:Boolean(jsonArray),servers:jsonArray||[]}}));
     };
 
     function renderPills(containerId, list, colorClasses) {
@@ -1084,15 +1087,15 @@
       setInterval(() => window.syncOfficialServers(false), 60000);
     });
   </script>
-  <script src="interactive-map.js?v=20261118-2"></script>
-  <script src="live-map.js?v=20261118-3"></script>
+  <script src="interactive-map.js?v=20261118-3"></script>
+  <script src="live-map.js?v=20261118-4"></script>
   <link rel="stylesheet" href="server-history.css?v=20261117-3" />
   <link rel="stylesheet" href="tribe-layout.css?v=20261118-2" />
-  <script src="server-history.js?v=20261118-1"></script>
+  <script src="server-history.js?v=20261118-2"></script>
 <footer class="community-contact" aria-label="Discord community and owner contact">
   <section class="community-invite"><h2>Join the Raptor News community</h2><p>ARK news, tribe updates and the community on Discord.</p><a href="https://discord.gg/raptornews" target="_blank" rel="noopener noreferrer">Join our Discord ↗</a></section>
   <section class="owner-contact"><h2>Owner · Discord contact</h2><a href="https://discord.com/users/734900663112171580" target="_blank" rel="noopener noreferrer">@kiddjr ↗</a><p class="owner-id">Discord ID: 734900663112171580</p></section>
 </footer>
-</body>
+<script src="directory-search.js?v=20261118-1"></script></body>
 </html>
 
