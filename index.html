@@ -90,7 +90,7 @@
     }
   </style>
   <link rel="stylesheet" href="interactive-map.css?v=20261118-1" />
-  <link rel="stylesheet" href="live-map.css?v=20261118-1" />
+  <link rel="stylesheet" href="live-map.css?v=20261118-3" />
   <link rel="stylesheet" href="site-tabs.css?v=20261118-1" />
   <link rel="icon" href="favicon.ico?v=20261117" sizes="any" />
   <link rel="icon" href="favicon-32.png?v=20261117" type="image/png" sizes="32x32" />
@@ -152,7 +152,7 @@
           <button id="map-fit" type="button">Fit map</button>
         </div>
       </div>
-      <p class="map-help">Select a logo for tribe details or select a line to explore a relationship. Use + to zoom.</p>
+      <p class="map-help">Select a logo for tribe details. Use + to zoom and scroll to explore the map.</p>
       <div id="map-search-results" aria-label="Tribe search results" hidden></div>
       <div id="map-viewport" tabindex="0" aria-label="Interactive tribe map. Tab to a tribe and press Enter to select.">
         <div id="map-stage">
@@ -250,23 +250,14 @@
       <div id="tribe-picker-card" class="lg:col-span-6 ui-card rounded-2xl p-4 flex flex-col gap-3">
         <div>
           <div class="flex items-center justify-between pb-1.5 mb-2 border-b" style="border-color: var(--border-ui);">
-            <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-400">Tribes on Map (Live Pop)</span>
+            <span class="text-[11px] font-extrabold tracking-wider text-amber-400">1x tribes</span>
             <span id="asa-total-count" class="text-[10px] font-bold text-slate-400">Active</span>
           </div>
-          <div id="quick-tracked-list" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-44 overflow-y-auto pr-1">
+          <div id="quick-tracked-list" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5" aria-label="All 1x tribes">
             <!-- Populated dynamically -->
           </div>
         </div>
 
-        <div class="pt-2 border-t" style="border-color: var(--border-ui);">
-          <div class="flex items-center justify-between pb-1.5 mb-2">
-            <span class="text-[11px] font-extrabold uppercase tracking-wider text-purple-400">📡 Radar / Off-Map</span>
-            <span class="text-[10px] font-bold text-slate-400">Off-map tribes</span>
-          </div>
-          <div id="offmap-tracked-list" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-            <!-- Populated dynamically -->
-          </div>
-        </div>
       </div>
 
     </div>
@@ -887,9 +878,12 @@
         container.innerHTML = `<span class="px-2 py-0.5 rounded bg-slate-800/60 text-slate-400 text-[11px] font-semibold">None</span>`;
         return;
       }
-      container.innerHTML = list
-        .map(item => `<span class="px-2 py-0.5 rounded text-[11px] font-bold border ${colorClasses}">${item}</span>`)
-        .join('');
+      container.replaceChildren(...list.map(item => {
+        const pill = document.createElement('span');
+        pill.className = `px-2 py-0.5 rounded text-[11px] font-bold border ${colorClasses}`;
+        pill.textContent = item;
+        return pill;
+      }));
     }
 
     window.selectTribe = function(id) {
@@ -910,7 +904,9 @@
 
       const avatarBox = document.getElementById('ui-avatar-box');
       if (savedLogo) {
-        avatarBox.innerHTML = `<img src="${savedLogo}" alt="${info.name}" class="w-full h-full object-cover" />`;
+        const avatar = document.createElement('img');
+        avatar.src = savedLogo; avatar.alt = info.name; avatar.className = 'w-full h-full object-cover';
+        avatarBox.replaceChildren(avatar);
       } else {
         avatarBox.textContent = info.name.slice(0, 4).toUpperCase();
       }
@@ -982,12 +978,12 @@
 
     function renderQuickTrackedList() {
       const container = document.getElementById('quick-tracked-list');
-      const offMapContainer = document.getElementById('offmap-tracked-list');
       if (!container) return;
 
       let globalTotal = 0;
       let totalTracked = 0;
 
+      const escapeText = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const buildCardHTML = (id) => {
         const info = TRIBE_DB[id];
         const servers = getTribeServers(id);
@@ -1012,23 +1008,17 @@
         return `
           <button onclick="window.selectTribe('${id}')" class="p-2 rounded-lg ${isSelected ? 'bg-sky-900/55 border-sky-400' : 'bg-slate-900/75 hover:bg-sky-900/40 border-slate-700/70 hover:border-sky-400'} border text-left transition">
             <div class="flex items-center justify-between gap-1">
-              <span class="font-black text-[11px] text-white truncate">${info.name}</span>
+                <span class="font-black text-[11px] text-white truncate">${escapeText(info.name)}</span>
               <span class="text-[10px] font-bold text-sky-400 shrink-0">${servers.length} srv</span>
             </div>
             <div class="text-[10px] font-extrabold ${anyLive ? (anyCapped ? 'text-red-400' : 'text-emerald-400') : 'text-slate-400'} mt-0.5 truncate">
-              ${anyLive ? `${anyCapped ? '🔴' : '🟢'} ${pSum}/${mSum} online` : servers.join('/')}
+                ${anyLive ? `${anyCapped ? '🔴' : '🟢'} ${pSum}/${mSum} online` : 'No servers assigned'}
             </div>
           </button>
         `;
       };
 
-      const onMapIds = Object.keys(TRIBE_DB).filter(id => !TRIBE_DB[id].offMap && getTribeServers(id).length > 0);
-      const offMapIds = Object.keys(TRIBE_DB).filter(id => TRIBE_DB[id].offMap);
-
-      container.innerHTML = onMapIds.map(buildCardHTML).join('');
-      if (offMapContainer) {
-        offMapContainer.innerHTML = offMapIds.map(buildCardHTML).join('');
-      }
+        container.innerHTML = Object.keys(TRIBE_DB).map(buildCardHTML).join('');
 
       const playersEl = document.getElementById('global-x1-players');
       if (playersEl) playersEl.textContent = `Active Players (${globalTotal})`;
@@ -1100,9 +1090,9 @@
     });
   </script>
   <script src="interactive-map.js?v=20261118-1"></script>
-  <script src="live-map.js?v=20261118-2"></script>
+  <script src="live-map.js?v=20261118-3"></script>
   <link rel="stylesheet" href="server-history.css?v=20261117-3" />
-  <link rel="stylesheet" href="tribe-layout.css?v=20261118-1" />
+  <link rel="stylesheet" href="tribe-layout.css?v=20261118-2" />
   <script src="server-history.js?v=20261118-1"></script>
 </body>
 </html>
