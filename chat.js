@@ -8,7 +8,7 @@
   const API='https://bot-ark-production-a0afb716.up.railway.app', $=id=>document.getElementById(id);
   let configured=false,busy=false,history=[],sequence=0;
   const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
-  function sourceUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&u.hostname==='discord.com'&&/^\/channels\/1343348944427815013\/(1343673608421113917|1343693976317988935)(\/\d+)?$/.test(u.pathname)?u.href:null;}catch{return null;}}
+  function sourceUrl(value){try{const u=new URL(value);if(u.protocol!=='https:'||u.username||u.password)return null;return (u.hostname==='discord.com'&&/^\/channels\/1343348944427815013\/\d{15,22}(\/\d{15,22})?$/.test(u.pathname))||(u.hostname==='arkraptornews.com'&&['/','/tools.html','/hall-of-fame.html'].includes(u.pathname))?u.href:null;}catch{return null;}}
   const date=value=>{const d=new Date(value);return Number.isFinite(d.getTime())?d.toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'}):'Date not available';};
   function buttons(){ $('ask-ai').disabled=busy||!configured;$('search-archive').disabled=busy;$('chat-question').disabled=busy; }
   async function updateStatus(){
@@ -17,7 +17,7 @@
       configured=Boolean(data.configured);$('archive-sources').replaceChildren();
       for(const source of data.sources||[]){const box=el('div',undefined,'source-status'),a=el('a',source.name+' ↗'),url=sourceUrl(source.url);if(url){a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(a);}box.append(el('small',`${source.messages.toLocaleString()} messages · ${source.complete?'History imported':'Importing older posts'}${source.available?'':' · Source delayed'}`));$('archive-sources').append(box);}
       $('archive-progress').textContent=`${Number(data.total_messages||0).toLocaleString()} archived messages · ${data.backfill_complete?'Available history imported':'Historical import in progress'}`;
-      $('provider-status').textContent=configured?'Gemini enabled · Answers include dated sources':'AI is awaiting server configuration. Archive search is still available.';
+      $('provider-status').textContent=configured?'Gemini enabled · Discord history'+(data.structured_knowledge?' + current website facts':'')+' · Dated sources':'AI is awaiting server configuration. Archive search is still available.';
       buttons();
     }catch{$('archive-progress').textContent='Archive status is temporarily unavailable.';$('provider-status').textContent='Please retry shortly.';}
   }
