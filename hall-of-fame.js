@@ -2,7 +2,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  let members = [], animation, running = !reduced.matches, filtered = [], limit = 100, columns, duration = 1, start = 0, distance = 1;
+  let members = [], animation, running = true, filtered = [], limit = 100, columns, duration = 1, start = 0, distance = 1;
   const canvas = $('stars'), context = canvas.getContext('2d');
   function drawStars() {
     const rect = canvas.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
@@ -42,7 +42,7 @@
       $('credit-names').replaceChildren(fragment);
     }
     animation?.cancel();
-    start = Math.min($('stage').clientHeight * .70, 380);
+    start = 0;
     distance = $('crawl').scrollHeight + start;
     duration = distance / 33 * 1000;
     animation = $('crawl').animate([{transform: `translateY(${start}px)`}, {transform: `translateY(${-$('crawl').scrollHeight}px)`}], {duration, fill: 'both', easing: 'linear'});
@@ -79,6 +79,8 @@
   function directory(open) { $('directory').hidden = !open; $('view-toggle').setAttribute('aria-pressed', String(open)); $('view-toggle').textContent = open ? 'Hide member list ↗' : 'View member list ↗'; if (open) showResults(); }
   $('play').addEventListener('click', () => { running = !running; if (running) { if (progress() >= 1) seek(0); if (!document.hidden) animation?.play(); } else animation?.pause(); updatePlay(); });
   $('restart').addEventListener('click', () => { seek(0); if (running) animation?.play(); });
+  $('rewind').addEventListener('click', () => seek(progress() - 10000 / duration));
+  $('forward').addEventListener('click', () => seek(progress() + 10000 / duration));
   $('speed').addEventListener('change', () => { if (animation) animation.playbackRate = Number($('speed').value); });
   $('progress').addEventListener('input', () => seek(Number($('progress').value) / 1000));
   $('view-toggle').addEventListener('click', () => directory($('directory').hidden));
@@ -99,6 +101,14 @@
       const data = await response.json();
       if (!Array.isArray(data.members) || !data.members.length) throw Error('Community not ready');
       members = data.members.filter(m => typeof m.name === 'string' && m.name.trim());
+      const staff = document.createElement('div'); staff.className = 'staff-credits';
+      for (const [title, names] of [['Owners', ['KiddJr', 'Raydark', 'vellita']], ['Admins', ['HB', 'Error']], ['Mods', (data.moderators || []).map(m => m.name)]]) {
+        const section = document.createElement('section'), heading = document.createElement('h2'); heading.textContent = title; section.append(heading);
+        for (const name of names) { const line = document.createElement('p'); line.textContent = name; section.append(line); }
+        if (!names.length && title === 'Mods') { const line = document.createElement('p'); line.textContent = 'Moderator roster syncing…'; section.append(line); }
+        staff.append(section);
+      }
+      $('crawl').prepend(staff);
       $('member-count').textContent = members.length.toLocaleString();
       $('sync-status').textContent = `${data.status === 'stale' ? 'Last saved roster' : 'Raptor News Discord'} · ${members.length.toLocaleString()} members · Bots excluded · ${new Date(data.updated_at).toLocaleString()}`;
       await document.fonts.ready;

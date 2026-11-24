@@ -5,8 +5,8 @@
   <title>Hall of Fame · Raptor News</title>
   <meta name="description" content="Every survivor has a place among the stars. The Raptor News community credits." />
   <link rel="icon" href="favicon.ico?v=20261117" sizes="any" />
-  <link rel="stylesheet" href="site-tabs.css?v=20261118-1" /><link rel="stylesheet" href="hall-of-fame.css?v=20261124-1" />
-  <script src="hall-of-fame.js?v=20261124-1" defer></script><script src="site-analytics.js?v=20261124-1" defer></script>
+  <link rel="stylesheet" href="site-tabs.css?v=20261118-1" /><link rel="stylesheet" href="hall-of-fame.css?v=20261124-2" />
+  <script src="hall-of-fame.js?v=20261124-2" defer></script><script src="site-analytics.js?v=20261124-2" defer></script>
 </head>
 <body>
   <nav class="site-tabs" aria-label="Main navigation"><a href="./">Tribe Map</a><a href="tools.html">ARK Tools</a><a href="news.html">News <span>NEW</span></a><a href="chat.html">AI Chat</a><a href="hall-of-fame.html" aria-current="page">Hall of Fame</a><a class="join" href="https://discord.gg/raptornews" target="_blank" rel="noopener noreferrer">Join Discord ↗</a></nav>
@@ -20,7 +20,7 @@
       <div id="loading" class="loading" role="status">Gathering the survivors…</div>
       <div class="cinema-bottom"><span>EVERY NAME. PART OF THE LEGEND.</span><button id="view-toggle" type="button" aria-pressed="false">View member list ↗</button></div>
     </section>
-    <div class="playback" aria-label="Credits controls"><button id="play" type="button" disabled>Pause</button><button id="restart" type="button" disabled>↺ Restart</button><label class="speed-label">Speed<select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label class="progress-label">Journey<input id="progress" type="range" min="0" max="1000" value="0" disabled /></label><label class="find-label"><span>Find your name</span><input id="member-search" type="search" placeholder="Search a survivor…" autocomplete="off" /></label></div>
+    <div class="playback" aria-label="Credits controls"><button id="play" type="button" disabled>Pause</button><button id="rewind" type="button" aria-label="Rewind 10 seconds">−10s</button><button id="forward" type="button" aria-label="Forward 10 seconds">+10s</button><button id="restart" type="button" disabled>↺ Restart</button><label class="speed-label">Speed<select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label class="progress-label">Journey<input id="progress" type="range" min="0" max="1000" value="0" disabled /></label><label class="find-label"><span>Find your name</span><input id="member-search" type="search" placeholder="Search a survivor…" autocomplete="off" /></label></div>
     <section id="directory" class="directory" hidden aria-label="Member directory"><div class="directory-heading"><h2>The survivors</h2><span id="result-count" role="status"></span></div><p>Select a name to jump to their place in the credits.</p><div id="search-results" class="search-results"></div><button id="more" type="button" hidden>Show more names</button></section>
     <footer><p id="sync-status" role="status">Names from the Raptor News Discord · Bot accounts excluded.</p><a href="https://discord.gg/raptornews" target="_blank" rel="noopener noreferrer">Your next chapter starts here. Join Raptor News ↗</a></footer>
     <noscript><p>Enable JavaScript to see the community credits, or <a href="https://discord.gg/raptornews">join Raptor News on Discord</a>.</p></noscript>
