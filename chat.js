@@ -17,7 +17,7 @@
       configured=Boolean(data.configured);$('archive-sources').replaceChildren();
       for(const source of data.sources||[]){const box=el('div',undefined,'source-status'),a=el('a',source.name+' ↗'),url=sourceUrl(source.url);if(url){a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(a);}box.append(el('small',`${source.messages.toLocaleString()} messages · ${source.complete?'History imported':'Importing older posts'}${source.available?'':' · Source delayed'}`));$('archive-sources').append(box);}
       $('archive-progress').textContent=`${Number(data.total_messages||0).toLocaleString()} archived messages · ${data.backfill_complete?'Available history imported':'Historical import in progress'}`;
-      $('provider-status').textContent=configured?'Gemini enabled · Discord history'+(data.structured_knowledge?' + current website facts':'')+' · Dated sources':'AI is awaiting server configuration. Archive search is still available.';
+      $('provider-status').textContent=configured?(data.provider_delayed?'Gemini temporarily unavailable · Saved records and source reports remain available.':'Gemini enabled · Discord history'+(data.structured_knowledge?' + current website facts':'')+' · Dated sources'):'AI is awaiting server configuration. Archive search is still available.';
       buttons();
     }catch{$('archive-progress').textContent='Archive status is temporarily unavailable.';$('provider-status').textContent='Please retry shortly.';}
   }
