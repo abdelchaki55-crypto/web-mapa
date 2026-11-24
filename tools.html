@@ -9,22 +9,44 @@
   <link rel="stylesheet" href="site-tabs.css?v=20261118-1" />
   <link rel="stylesheet" href="ark-tools.css?v=20261117-3" />
   <script src="ark-tools-data.js?v=20261117-3" defer></script>
-  <script src="ark-tools.js?v=20261117-3" defer></script>
+  <script src="ark-tools.js?v=20261124-4" defer></script>
   <link rel="icon" href="favicon.ico?v=20261117" sizes="any" />
   <link rel="icon" href="favicon-32.png?v=20261117" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261117" />
-<link rel="stylesheet" href="chat-widget.css?v=20261118-1" /><script src="chat-widget.js?v=20261118-1" defer></script><link rel="stylesheet" href="community.css?v=20261118-1" /><script src="site-analytics.js?v=20261123-1" defer></script></head>
-<body>
+<link rel="stylesheet" href="chat-widget.css?v=20261118-1" /><script src="chat-widget.js?v=20261118-1" defer></script><link rel="stylesheet" href="community.css?v=20261118-1" /><script src="site-analytics.js?v=20261123-1" defer></script><link rel="stylesheet" href="tools-simple.css?v=20261124-4" /></head>
+<body class="tools-simple">
   <a class="skip-link" href="#tools-main">Skip to tools</a>
   <header class="tools-header"><a class="brand" href="./"><img src="logo.jpg" alt="" width="44" height="44" /><span>RAPTOR <strong>NEWS</strong><small>ARK OFFICIAL x1 COMMUNITY</small></span></a><a class="back-link" href="./">← Tribe Map</a></header>
   <nav class="site-tabs" aria-label="Main navigation"><a href="./">Tribe Map</a><a href="tools.html" aria-current="page">ARK Tools</a><a href="news.html">News <span>NEW</span></a><a href="chat.html">AI Chat</a><a href="hall-of-fame.html">Hall of Fame</a><a class="discord-join" href="https://discord.gg/raptornews" target="_blank" rel="noopener noreferrer">Join Discord ↗</a></nav>
   <main id="tools-main">
-    <section class="tools-intro"><div><p class="eyebrow">PLAN THE GRIND</p><h1>Less counting.<br /><span>More surviving.</span></h1><p>Build your shopping list, prep your kibble, and get back to the ARK.</p></div><div class="intro-stamp"><span>ASA</span><strong>Survivor toolkit</strong><small>Standard engram recipes<br />Community wiki references</small></div></section>
-    <div class="tools-subnav" role="tablist" aria-label="ARK tool sections"><button role="tab" id="tab-crafting" aria-controls="panel-crafting" aria-selected="true" tabindex="0" data-section="crafting">01 <span>Resources</span></button><button role="tab" id="tab-kibble" aria-controls="panel-kibble" aria-selected="false" tabindex="-1" data-section="kibble">02 <span>Kibble kitchen</span></button></div>
+    <section class="tools-intro simple-intro"><div><p class="eyebrow">ARK SURVIVAL ASCENDED</p><h1>Crafting made simple.</h1><p>Choose an item. Add a quantity. Get your materials.</p></div><span class="catalogue-badge">1,261 recipes</span></section>
+    <div class="tools-subnav" role="tablist" aria-label="ARK tool sections"><button role="tab" id="tab-crafting" aria-controls="panel-crafting" aria-selected="true" tabindex="0" data-section="crafting"><span>Crafting calculator</span></button><button role="tab" id="tab-kibble" aria-controls="panel-kibble" aria-selected="false" tabindex="-1" data-section="kibble"><span>Kibble calculator</span></button></div>
     <section id="panel-crafting" class="tool-panel" role="tabpanel" aria-labelledby="tab-crafting">
-      <div class="section-heading"><div><p class="eyebrow">BUILD SMARTER</p><h2>Resource planner</h2><p>Search the ASA crafting catalogue, add recipes to your queue, and total the materials.</p></div><span class="small-chip">Standard engrams</span></div>
-      <div class="planner-layout"><div class="card"><h3>Your crafting queue</h3><div class="catalogue-filters"><label>Search items<input id="craft-search" type="search" placeholder="Saddle, shotgun, foundation…" /></label><label>Category<select id="craft-category"><option value="all">All categories</option></select></label></div><p id="catalogue-count" class="hint" role="status" aria-live="polite"></p><div id="item-results" class="item-results" aria-label="Item search results"></div><button id="more-items" class="text-button more-items" type="button" hidden>Show more items</button><form id="queue-form" class="queue-form"><label>Item<select id="craft-item"></select></label><label>Crafts<input id="craft-quantity" type="number" min="1" max="100000" step="1" value="100" required /></label><button class="primary" type="submit">+ Add to queue</button></form><div id="selected-recipe" class="selected-recipe"></div><div id="queue" class="queue-list"></div><p class="hint">Quantity counts recipe executions. Some ammunition and consumables produce multiple units per craft.</p></div>
-      <div class="card results-card"><div class="results-heading"><h3>Materials needed</h3><button id="copy-materials" class="text-button" type="button">Copy list</button></div><div class="mode-controls"><label>Show<select id="resource-mode"><option value="direct">Crafting components</option><option value="raw">Expand basic materials</option></select></label><label id="polymer-option" hidden>Polymer source<select id="polymer-mode"><option value="crafted">Craft regular Polymer</option><option value="organic">Gather Organic Polymer</option></select></label></div><p id="queue-summary" class="hint" role="status" aria-live="polite"></p><div class="table-scroll"><table><thead><tr><th scope="col">Material</th><th scope="col">Required</th></tr></thead><tbody id="materials"></tbody></table></div><p class="hint">Standard recipe costs per craft; fuel and blueprint multipliers are not included. Expanded mode breaks down electronics, polymer, ingots, cementing paste and Auto Turrets. Other ingredients stay as finished components.</p><div id="recipe-sources" class="source-links"></div></div></div>
+      <div class="simple-planner">
+        <section class="catalogue-card card" aria-labelledby="choose-heading">
+          <div class="step-heading"><span class="step-number">1</span><div><h2 id="choose-heading">Choose an item</h2><p>Search by name or pick an item below.</p></div></div>
+          <div class="catalogue-filters"><label class="search-label">Search items<input id="craft-search" type="search" placeholder="Try turret, saddle, shotgun…" autocomplete="off" /></label><label>Category<select id="craft-category"><option value="all">All categories</option></select></label></div>
+          <p id="catalogue-count" class="hint" role="status" aria-live="polite"></p>
+          <div id="item-results" class="item-results" aria-label="Choose a crafting item"></div>
+          <button id="more-items" class="text-button more-items" type="button" hidden>Show more items</button>
+        </section>
+        <div class="plan-stack"><section class="craft-builder card">
+            <div class="step-heading"><span class="step-number">2</span><div><h2>Set your quantity</h2><p id="selection-instruction">Select an item above to continue.</p></div></div>
+            <div id="selected-recipe" class="selected-recipe"></div>
+            <form id="queue-form" class="queue-form"><label class="visually-hidden">Selected item<select id="craft-item" tabindex="-1"></select></label><label>Number of crafts<input id="craft-quantity" type="number" min="1" max="100000" step="1" value="1" required /></label><button class="primary" type="submit">+ Add item</button></form>
+            <p class="hint quantity-hint">1 craft = one recipe. Some recipes produce several items.</p>
+          </section>
+        <aside class="plan-card card" aria-labelledby="plan-heading">
+          <div class="step-heading"><span class="step-number">3</span><div><h2 id="plan-heading">Your materials</h2><p>Totals update as you add items.</p></div></div>
+          <div class="queue-heading"><h3>Your items <span id="queue-count">0</span></h3><button id="clear-queue" class="text-button" type="button" hidden>Clear all</button></div>
+          <div id="queue" class="queue-list"></div>
+          <div class="results-heading"><h3>Total materials</h3><button id="copy-materials" class="text-button" type="button">Copy list</button></div>
+          <p id="queue-summary" class="hint" role="status" aria-live="polite"></p>
+          <div class="table-scroll"><table><thead><tr><th scope="col">Material</th><th scope="col">You need</th></tr></thead><tbody id="materials"></tbody></table></div>
+          <details class="calculation-options"><summary>Calculation options & recipe details</summary><div class="mode-controls"><label>Calculate<select id="resource-mode"><option value="direct">Recipe ingredients</option><option value="raw">Break down basic resources</option></select></label><label id="polymer-option" hidden>Polymer source<select id="polymer-mode"><option value="crafted">Craft regular Polymer</option><option value="organic">Gather Organic Polymer</option></select></label></div><p class="hint">Standard recipes. Fuel and blueprint multipliers are not included. Basic resource mode expands electronics, polymer, ingots, cementing paste and Auto Turrets; other ingredients remain finished components.</p><div id="recipe-sources" class="source-links"></div></details>
+        </aside>
+        </div>
+      </div>
     </section>
     <section id="panel-kibble" class="tool-panel" role="tabpanel" aria-labelledby="tab-kibble" hidden>
       <div class="section-heading"><div><p class="eyebrow">KEEP THE EGGS COMING</p><h2>Kibble kitchen</h2><p>Pick a tier and a batch size. Get the complete ingredient list.</p></div><span class="small-chip">6 kibble tiers</span></div>
