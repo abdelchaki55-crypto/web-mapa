@@ -4,3 +4,5 @@
 @media(prefers-reduced-motion:reduce){.santa-hero-art,.christmas-star,.hero-sparkles,.letter-success>span{animation:none}}
 
 @media(max-width:760px){.santa-hero{min-height:600px}.santa-hero-art{background-size:auto 345px;background-position:70% 0}.santa-hero:before{background:linear-gradient(0deg,#071a23 0%,#071a23f5 35%,#071a2388 53%,transparent 76%)}.santa-copy h1{font-size:46px}.santa-copy{padding-bottom:57px}}
+
+@media(max-width:760px){.north-pole-stamp{display:none}.letter-paper input,.letter-paper textarea{font-size:16px}}
