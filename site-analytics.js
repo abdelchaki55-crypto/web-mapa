@@ -3,7 +3,7 @@
   const allowed=['arkraptornews.com','www.arkraptornews.com','abdelchaki55-crypto.github.io'];
   if(!allowed.includes(location.hostname)||window.top!==window||navigator.webdriver||navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)return;
   const path=location.pathname==='/'||location.pathname==='/index.html'?'/':location.pathname;
-  if(!['/','/tools.html','/news.html','/chat.html','/hall-of-fame.html'].includes(path)||new URLSearchParams(location.search).get('embedded')==='1')return;
+  if(!['/','/tools.html','/news.html','/chat.html','/hall-of-fame.html','/santa.html'].includes(path)||new URLSearchParams(location.search).get('embedded')==='1')return;
   let sent=false;
   function count(){
     if(sent||document.visibilityState!=='visible')return;sent=true;
