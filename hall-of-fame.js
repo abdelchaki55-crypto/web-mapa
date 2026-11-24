@@ -108,7 +108,7 @@
         if (!names.length && title === 'Mods') { const line = document.createElement('p'); line.textContent = 'Moderator roster syncing…'; section.append(line); }
         staff.append(section);
       }
-      $('crawl').prepend(staff);
+      $('credit-names').before(staff);
       $('member-count').textContent = members.length.toLocaleString();
       $('sync-status').textContent = `${data.status === 'stale' ? 'Last saved roster' : 'Raptor News Discord'} · ${members.length.toLocaleString()} members · Bots excluded · ${new Date(data.updated_at).toLocaleString()}`;
       await document.fonts.ready;
